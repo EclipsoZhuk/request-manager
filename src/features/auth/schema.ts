@@ -5,10 +5,10 @@ export const userRoleSchema = z.enum(['manager', 'admin'])
 export type UserRole = z.infer<typeof userRoleSchema>
 
 export const authUserSchema = z.object({
-	id: z.string(),
-	login: z.string(),
+	id: z.string().min(1),
+	login: z.string().min(1),
 	role: userRoleSchema,
-	domainId: z.string()
+	domainId: z.string().min(1)
 })
 
 export type AuthUser = z.infer<typeof authUserSchema>

@@ -1,11 +1,10 @@
 'use server'
 
 import { redirect } from 'next/navigation'
-import { z } from 'zod'
 
-import type { LoginActionState } from './login-state'
+import type { LoginActionResult } from './action.types'
 import { MockAuthError } from './mock'
-import { loginSchema } from './schema'
+import { type LoginInput, loginSchema } from './schema'
 import { login as loginWithBackend, logout } from './service'
 import { ROLE_HOME_PATH } from '@/lib/auth'
 import { BackendError } from '@/lib/backend'
@@ -16,27 +15,18 @@ import {
 } from '@/lib/session'
 
 export async function loginAction(
-	_previousState: LoginActionState,
-	formData: FormData
-): Promise<LoginActionState> {
-	const rawValues = {
-		login: String(formData.get('login') ?? ''),
-		password: String(formData.get('password') ?? ''),
-		domain: String(formData.get('domain') ?? '')
-	}
-
-	const parsed = loginSchema.safeParse(rawValues)
+	input: LoginInput
+): Promise<LoginActionResult> {
+	/*
+	 * Никогда не доверяем только клиентской валидации.
+	 * Повторно проверяем данные внутри Server Action.
+	 */
+	const parsed = loginSchema.safeParse(input)
 
 	if (!parsed.success) {
-		const { fieldErrors } = z.flattenError(parsed.error)
-
 		return {
-			message: null,
-			fieldErrors,
-			values: {
-				login: rawValues.login,
-				domain: rawValues.domain
-			}
+			success: false,
+			fieldErrors: parsed.error.flatten().fieldErrors
 		}
 	}
 
@@ -47,29 +37,25 @@ export async function loginAction(
 	} catch (error) {
 		if (error instanceof MockAuthError || error instanceof BackendError) {
 			return {
-				message: error.message,
-				fieldErrors: {},
-				values: {
-					login: parsed.data.login,
-					domain: parsed.data.domain
-				}
+				success: false,
+				message: error.message
 			}
 		}
 
 		console.error('Login action error:', error)
 
 		return {
-			message: 'Не удалось выполнить вход. Попробуйте ещё раз.',
-			fieldErrors: {},
-			values: {
-				login: parsed.data.login,
-				domain: parsed.data.domain
-			}
+			success: false,
+			message: 'Не удалось выполнить вход. Попробуйте ещё раз.'
 		}
 	}
 
 	await setAccessToken(authResult.accessToken, authResult.expiresIn)
 
+	/*
+	 * redirect должен находиться вне try/catch,
+	 * потому что внутри Next.js он прерывает выполнение.
+	 */
 	redirect(ROLE_HOME_PATH[authResult.user.role])
 }
 

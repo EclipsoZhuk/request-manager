@@ -1,29 +1,79 @@
 'use client'
 
-import { useActionState } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useTransition } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue
+} from '@/components/ui/select'
 
 import { loginAction } from './actions'
-import { initialLoginState } from './login-state'
+import { type LoginInput, loginSchema } from './schema'
+
+const DEFAULT_VALUES: LoginInput = {
+	login: '',
+	password: '',
+	domain: ''
+}
 
 export function LoginForm() {
-	const [state, formAction, isPending] = useActionState(
-		loginAction,
-		initialLoginState
-	)
+	const [isPending, startTransition] = useTransition()
 
-	const loginError = state.fieldErrors.login?.[0]
+	const {
+		register,
+		control,
+		handleSubmit,
+		clearErrors,
+		setError,
+		formState: { errors }
+	} = useForm<LoginInput>({
+		resolver: zodResolver(loginSchema),
+		defaultValues: DEFAULT_VALUES,
+		mode: 'onSubmit',
+		reValidateMode: 'onChange'
+	})
 
-	const passwordError = state.fieldErrors.password?.[0]
+	const onSubmit = handleSubmit(values => {
+		clearErrors()
 
-	const domainError = state.fieldErrors.domain?.[0]
+		startTransition(async () => {
+			const result = await loginAction(values)
+
+			if (result.fieldErrors) {
+				for (const [field, messages] of Object.entries(result.fieldErrors)) {
+					const message = messages?.[0]
+
+					if (!message) {
+						continue
+					}
+
+					setError(field as keyof LoginInput, {
+						type: 'server',
+						message
+					})
+				}
+			}
+
+			if (result.message) {
+				setError('root.server', {
+					type: 'server',
+					message: result.message
+				})
+			}
+		})
+	})
 
 	return (
 		<form
-			action={formAction}
+			onSubmit={onSubmit}
 			className='space-y-6'
 			noValidate
 		>
@@ -32,25 +82,23 @@ export function LoginForm() {
 
 				<Input
 					id='login'
-					name='login'
 					type='text'
-					defaultValue={state.values.login}
 					placeholder='Логин'
 					autoComplete='username'
-					minLength={3}
-					maxLength={64}
-					aria-invalid={Boolean(loginError)}
-					aria-describedby={loginError ? 'login-error' : undefined}
+					disabled={isPending}
+					aria-invalid={Boolean(errors.login)}
+					aria-describedby={errors.login ? 'login-error' : undefined}
 					className='h-12'
+					{...register('login')}
 				/>
 
-				{loginError && (
+				{errors.login?.message && (
 					<p
 						id='login-error'
 						role='alert'
 						className='text-destructive text-sm'
 					>
-						{loginError}
+						{errors.login.message}
 					</p>
 				)}
 			</div>
@@ -60,24 +108,23 @@ export function LoginForm() {
 
 				<Input
 					id='password'
-					name='password'
 					type='password'
 					placeholder='Пароль'
 					autoComplete='current-password'
-					minLength={6}
-					maxLength={128}
-					aria-invalid={Boolean(passwordError)}
-					aria-describedby={passwordError ? 'password-error' : undefined}
+					disabled={isPending}
+					aria-invalid={Boolean(errors.password)}
+					aria-describedby={errors.password ? 'password-error' : undefined}
 					className='h-12'
+					{...register('password')}
 				/>
 
-				{passwordError && (
+				{errors.password?.message && (
 					<p
 						id='password-error'
 						role='alert'
 						className='text-destructive text-sm'
 					>
-						{passwordError}
+						{errors.password.message}
 					</p>
 				)}
 			</div>
@@ -85,41 +132,48 @@ export function LoginForm() {
 			<div className='space-y-2'>
 				<Label htmlFor='domain'>Выбор домена</Label>
 
-				<select
-					id='domain'
+				<Controller
 					name='domain'
-					defaultValue={state.values.domain}
-					aria-invalid={Boolean(domainError)}
-					aria-describedby={domainError ? 'domain-error' : undefined}
-					className='border-input bg-background focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 flex h-12 w-full rounded-md border px-3 text-sm outline-none focus-visible:ring-[3px]'
-				>
-					<option
-						value=''
-						disabled
-					>
-						Выбор домена
-					</option>
+					control={control}
+					render={({ field }) => (
+						<Select
+							value={field.value || undefined}
+							onValueChange={field.onChange}
+							disabled={isPending}
+						>
+							<SelectTrigger
+								id='domain'
+								aria-invalid={Boolean(errors.domain)}
+								aria-describedby={errors.domain ? 'domain-error' : undefined}
+								className='h-12 w-full'
+							>
+								<SelectValue placeholder='Выбор домена' />
+							</SelectTrigger>
 
-					<option value='domain-1'>Домен 1</option>
-				</select>
+							<SelectContent>
+								<SelectItem value='domain-1'>Домен 1</SelectItem>
+							</SelectContent>
+						</Select>
+					)}
+				/>
 
-				{domainError && (
+				{errors.domain?.message && (
 					<p
 						id='domain-error'
 						role='alert'
 						className='text-destructive text-sm'
 					>
-						{domainError}
+						{errors.domain.message}
 					</p>
 				)}
 			</div>
 
-			{state.message && (
+			{errors.root?.server?.message && (
 				<div
 					role='alert'
 					className='bg-destructive/10 text-destructive rounded-md px-4 py-3 text-sm'
 				>
-					{state.message}
+					{errors.root.server.message}
 				</div>
 			)}
 

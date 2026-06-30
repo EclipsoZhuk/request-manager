@@ -17,7 +17,7 @@ export function AppSidebar({ role }: AppSidebarProps) {
 	const navigation = navigationByRole[role]
 
 	return (
-		<aside className='bg-sidebar hidden w-[202px] shrink-0 border-r lg:block'>
+		<aside className='bg-sidebar hidden w-50 shrink-0 border-r lg:block'>
 			<nav className='flex flex-col gap-2 p-5'>
 				{navigation.map(item => {
 					const isActive = pathname === item.href
