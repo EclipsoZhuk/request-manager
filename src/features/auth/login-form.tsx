@@ -74,11 +74,16 @@ export function LoginForm() {
 	return (
 		<form
 			onSubmit={onSubmit}
-			className='space-y-6'
+			className='space-y-7'
 			noValidate
 		>
-			<div className='space-y-2'>
-				<Label htmlFor='login'>Логин</Label>
+			<div className='space-y-3'>
+				<Label
+					htmlFor='login'
+					className='text-base font-normal text-[#4b4b4b]'
+				>
+					Логин
+				</Label>
 
 				<Input
 					id='login'
@@ -88,7 +93,7 @@ export function LoginForm() {
 					disabled={isPending}
 					aria-invalid={Boolean(errors.login)}
 					aria-describedby={errors.login ? 'login-error' : undefined}
-					className='h-12'
+					className='focus-visible:border-primary focus-visible:ring-primary/20 h-13 rounded-[8px] border-[#d2d2d2] bg-white px-4 text-base shadow-none placeholder:text-[#aaa]'
 					{...register('login')}
 				/>
 
@@ -103,8 +108,13 @@ export function LoginForm() {
 				)}
 			</div>
 
-			<div className='space-y-2'>
-				<Label htmlFor='password'>Пароль</Label>
+			<div className='space-y-3'>
+				<Label
+					htmlFor='password'
+					className='text-base font-normal text-[#4b4b4b]'
+				>
+					Пароль
+				</Label>
 
 				<Input
 					id='password'
@@ -114,7 +124,7 @@ export function LoginForm() {
 					disabled={isPending}
 					aria-invalid={Boolean(errors.password)}
 					aria-describedby={errors.password ? 'password-error' : undefined}
-					className='h-12'
+					className='focus-visible:border-primary focus-visible:ring-primary/20 h-13 rounded-[8px] border-[#d2d2d2] bg-white px-4 text-base shadow-none placeholder:text-[#aaa]'
 					{...register('password')}
 				/>
 
@@ -129,8 +139,13 @@ export function LoginForm() {
 				)}
 			</div>
 
-			<div className='space-y-2'>
-				<Label htmlFor='domain'>Выбор домена</Label>
+			<div className='space-y-3'>
+				<Label
+					htmlFor='domain'
+					className='text-base font-normal text-[#4b4b4b]'
+				>
+					Выбор домена
+				</Label>
 
 				<Controller
 					name='domain'
@@ -138,14 +153,18 @@ export function LoginForm() {
 					render={({ field }) => (
 						<Select
 							value={field.value || undefined}
-							onValueChange={field.onChange}
+							onValueChange={value => {
+								field.onChange(value)
+								clearErrors('domain')
+								clearErrors('root.server')
+							}}
 							disabled={isPending}
 						>
 							<SelectTrigger
 								id='domain'
 								aria-invalid={Boolean(errors.domain)}
 								aria-describedby={errors.domain ? 'domain-error' : undefined}
-								className='h-12 w-full'
+								className='focus-visible:border-primary focus-visible:ring-primary/20 h-13 w-full rounded-[8px] border-[#d2d2d2] bg-white px-4 text-base shadow-none data-[placeholder]:text-[#aaa]'
 							>
 								<SelectValue placeholder='Выбор домена' />
 							</SelectTrigger>
@@ -171,7 +190,7 @@ export function LoginForm() {
 			{errors.root?.server?.message && (
 				<div
 					role='alert'
-					className='bg-destructive/10 text-destructive rounded-md px-4 py-3 text-sm'
+					className='bg-destructive/10 text-destructive rounded-[8px] px-4 py-3 text-sm'
 				>
 					{errors.root.server.message}
 				</div>
@@ -180,7 +199,7 @@ export function LoginForm() {
 			<Button
 				type='submit'
 				disabled={isPending}
-				className='h-12 w-full'
+				className='mt-11 h-13 w-full rounded-[8px] text-base font-medium'
 			>
 				{isPending ? 'Выполняется вход...' : 'Войти'}
 			</Button>
