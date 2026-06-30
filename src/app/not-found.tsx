@@ -1,14 +1,13 @@
 import { redirect } from 'next/navigation'
 
-import { ROLE_HOME_PATH } from '@/lib/auth/roles'
-import { getSession } from '@/lib/auth/session'
+import { ROLE_HOME_PATH, getCurrentUser } from '@/lib/auth'
 
 export default async function NotFound() {
-	const session = await getSession()
+	const user = await getCurrentUser()
 
-	if (!session) {
+	if (!user) {
 		redirect('/login')
 	}
 
-	redirect(ROLE_HOME_PATH[session.user.role])
+	redirect(ROLE_HOME_PATH[user.role])
 }

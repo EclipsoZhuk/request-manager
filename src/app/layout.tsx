@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
 import './globals.css'
-import { Providers } from './providers'
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -15,27 +14,21 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-	title: {
-		default: 'Request Manager',
-		template: '%s | Request Manager'
-	},
+	title: 'Request Manager',
 	description: 'Система управления заявками'
 }
 
-type RootLayoutProps = Readonly<{
+type RootLayoutProps = {
 	children: React.ReactNode
-}>
+}
 
 export default function RootLayout({ children }: RootLayoutProps) {
 	return (
 		<html
 			lang='ru'
-			className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-			suppressHydrationWarning
+			className={`${geistSans.variable} ${geistMono.variable}`}
 		>
-			<body>
-				<Providers>{children}</Providers>
-			</body>
+			<body>{children}</body>
 		</html>
 	)
 }

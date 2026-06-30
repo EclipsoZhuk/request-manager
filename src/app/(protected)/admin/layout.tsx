@@ -1,6 +1,6 @@
 import { AppShell } from '@/components/layout/app-shell'
 
-import { requireRole } from '@/lib/auth/require-role'
+import { requireRole } from '@/lib/auth'
 
 type AdminLayoutProps = {
 	children: React.ReactNode
