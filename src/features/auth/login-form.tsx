@@ -74,135 +74,138 @@ export function LoginForm() {
 	return (
 		<form
 			onSubmit={onSubmit}
-			className='space-y-7'
+			className='space-y-10'
 			noValidate
 		>
-			<div className='space-y-3'>
-				<Label
-					htmlFor='login'
-					className='text-base font-normal text-[#4b4b4b]'
-				>
-					Логин
-				</Label>
+			<div className='space-y-4'>
+				<Label htmlFor='login'>Логин</Label>
 
-				<Input
-					id='login'
-					type='text'
-					placeholder='Логин'
-					autoComplete='username'
-					disabled={isPending}
-					aria-invalid={Boolean(errors.login)}
-					aria-describedby={errors.login ? 'login-error' : undefined}
-					className='focus-visible:border-primary focus-visible:ring-primary/20 h-13 rounded-[8px] border-[#d2d2d2] bg-white px-4 text-base shadow-none placeholder:text-[#aaa]'
-					{...register('login')}
-				/>
+				<div className='space-y-2'>
+					<Input
+						id='login'
+						type='text'
+						placeholder='Логин'
+						autoComplete='username'
+						disabled={isPending}
+						aria-invalid={Boolean(errors.login)}
+						aria-describedby={errors.login ? 'login-error' : undefined}
+						{...register('login')}
+					/>
 
-				{errors.login?.message && (
-					<p
-						id='login-error'
-						role='alert'
-						className='text-destructive text-sm'
-					>
-						{errors.login.message}
-					</p>
-				)}
-			</div>
-
-			<div className='space-y-3'>
-				<Label
-					htmlFor='password'
-					className='text-base font-normal text-[#4b4b4b]'
-				>
-					Пароль
-				</Label>
-
-				<Input
-					id='password'
-					type='password'
-					placeholder='Пароль'
-					autoComplete='current-password'
-					disabled={isPending}
-					aria-invalid={Boolean(errors.password)}
-					aria-describedby={errors.password ? 'password-error' : undefined}
-					className='focus-visible:border-primary focus-visible:ring-primary/20 h-13 rounded-[8px] border-[#d2d2d2] bg-white px-4 text-base shadow-none placeholder:text-[#aaa]'
-					{...register('password')}
-				/>
-
-				{errors.password?.message && (
-					<p
-						id='password-error'
-						role='alert'
-						className='text-destructive text-sm'
-					>
-						{errors.password.message}
-					</p>
-				)}
-			</div>
-
-			<div className='space-y-3'>
-				<Label
-					htmlFor='domain'
-					className='text-base font-normal text-[#4b4b4b]'
-				>
-					Выбор домена
-				</Label>
-
-				<Controller
-					name='domain'
-					control={control}
-					render={({ field }) => (
-						<Select
-							value={field.value || undefined}
-							onValueChange={value => {
-								field.onChange(value)
-								clearErrors('domain')
-								clearErrors('root.server')
-							}}
-							disabled={isPending}
+					{errors.login?.message && (
+						<p
+							id='login-error'
+							role='alert'
+							className='text-destructive'
 						>
-							<SelectTrigger
-								id='domain'
-								aria-invalid={Boolean(errors.domain)}
-								aria-describedby={errors.domain ? 'domain-error' : undefined}
-								className='focus-visible:border-primary focus-visible:ring-primary/20 h-13 w-full rounded-[8px] border-[#d2d2d2] bg-white px-4 text-base shadow-none data-[placeholder]:text-[#aaa]'
-							>
-								<SelectValue placeholder='Выбор домена' />
-							</SelectTrigger>
-
-							<SelectContent>
-								<SelectItem value='domain-1'>Домен 1</SelectItem>
-							</SelectContent>
-						</Select>
+							{errors.login.message}
+						</p>
 					)}
-				/>
-
-				{errors.domain?.message && (
-					<p
-						id='domain-error'
-						role='alert'
-						className='text-destructive text-sm'
-					>
-						{errors.domain.message}
-					</p>
-				)}
+				</div>
 			</div>
 
-			{errors.root?.server?.message && (
-				<div
-					role='alert'
-					className='bg-destructive/10 text-destructive rounded-[8px] px-4 py-3 text-sm'
-				>
-					{errors.root.server.message}
-				</div>
-			)}
+			<div className='space-y-4'>
+				<Label htmlFor='password'>Пароль</Label>
 
-			<Button
-				type='submit'
-				disabled={isPending}
-				className='mt-11 h-13 w-full rounded-[8px] text-base font-medium'
-			>
-				{isPending ? 'Выполняется вход...' : 'Войти'}
-			</Button>
+				<div className='space-y-2'>
+					<Input
+						id='password'
+						type='password'
+						placeholder='Пароль'
+						autoComplete='current-password'
+						disabled={isPending}
+						aria-invalid={Boolean(errors.password)}
+						aria-describedby={errors.password ? 'password-error' : undefined}
+						{...register('password')}
+					/>
+
+					{errors.password?.message && (
+						<p
+							id='password-error'
+							role='alert'
+							className='text-destructive'
+						>
+							{errors.password.message}
+						</p>
+					)}
+				</div>
+			</div>
+
+			<div className='mb-0 space-y-4'>
+				<Label htmlFor='domain'>Выбор домена</Label>
+
+				<div className='space-y-2'>
+					<Controller
+						name='domain'
+						control={control}
+						render={({ field }) => (
+							<Select
+								value={field.value || undefined}
+								onValueChange={value => {
+									field.onChange(value)
+									clearErrors('domain')
+									clearErrors('root.server')
+								}}
+								disabled={isPending}
+							>
+								<SelectTrigger
+									id='domain'
+									aria-invalid={Boolean(errors.domain)}
+									aria-describedby={errors.domain ? 'domain-error' : undefined}
+									className='w-full'
+								>
+									<SelectValue placeholder='Выбор домена' />
+								</SelectTrigger>
+
+								<SelectContent
+									position='popper'
+									align='start'
+									sideOffset={8}
+								>
+									{[1, 2, 3, 4, 5].map(domain => (
+										<SelectItem
+											key={domain}
+											value={`domain-${domain}`}
+											className='focus:border-border text-muted-foreground data-[state=checked]:border-border h-12 rounded-lg border border-transparent px-3 text-sm font-bold focus:bg-white data-[state=checked]:bg-white'
+										>
+											{domain}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						)}
+					/>
+
+					{errors.domain?.message && (
+						<p
+							id='domain-error'
+							role='alert'
+							className='text-destructive text-sm'
+						>
+							{errors.domain.message}
+						</p>
+					)}
+				</div>
+			</div>
+
+			<div className='mt-15 space-y-5'>
+				{errors.root?.server?.message && (
+					<p
+						role='alert'
+						className='text-destructive text-center'
+					>
+						{errors.root.server.message}
+					</p>
+				)}
+				<Button
+					type='submit'
+					size='lg'
+					disabled={isPending}
+					className='w-full'
+				>
+					{isPending ? 'Выполняется вход...' : 'Войти'}
+				</Button>
+			</div>
 		</form>
 	)
 }

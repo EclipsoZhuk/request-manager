@@ -1,5 +1,5 @@
-import { Zap } from 'lucide-react'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { redirect } from 'next/navigation'
 
 import { LoginForm } from '@/features/auth/login-form'
@@ -25,19 +25,19 @@ export default async function LoginPage() {
 				}}
 			/>
 
-			<div className='absolute inset-0 bg-white/10' />
-
-			<section className='relative z-10 w-full max-w-[630px] rounded-[24px] border border-black/25 bg-white px-13 py-15 shadow-[0_4px_20px_rgba(0,0,0,0.04)]'>
-				<div className='mb-12 flex flex-col items-center'>
-					<Zap
-						aria-hidden='true'
-						className='fill-primary text-primary mb-7 size-11'
-						strokeWidth={1.8}
+			<section className='bg-card relative w-full max-w-157.5 space-y-10 rounded-[24px] border border-[#B9B9B9] px-15 py-20'>
+				<div className='flex flex-col items-center space-y-10'>
+					<Image
+						src='/images/logo.svg'
+						alt='Logo'
+						width={44}
+						height={44}
+						unoptimized
+						priority
+						className='size-11'
 					/>
 
-					<h1 className='text-foreground text-[32px] leading-none font-semibold tracking-[-0.02em]'>
-						Логин
-					</h1>
+					<h1 className='text-[32px] font-bold tracking-[-0.11px]'>Логин</h1>
 				</div>
 
 				<LoginForm />

@@ -43,14 +43,6 @@
 	--color-popover: var(--popover);
 	--color-card-foreground: var(--card-foreground);
 	--color-card: var(--card);
-
-	--radius-sm: calc(var(--radius) * 0.6);
-	--radius-md: calc(var(--radius) * 0.8);
-	--radius-lg: var(--radius);
-	--radius-xl: calc(var(--radius) * 1.4);
-	--radius-2xl: calc(var(--radius) * 1.8);
-	--radius-3xl: calc(var(--radius) * 2.2);
-	--radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
@@ -77,7 +69,6 @@
 	--chart-3: #f59e42;
 	--chart-4: #ec5b8d;
 	--chart-5: #7c6cf2;
-	--radius: 0.75rem;
 	--sidebar: #ffffff;
 	--sidebar-foreground: #202224;
 	--sidebar-primary: #4880ff;

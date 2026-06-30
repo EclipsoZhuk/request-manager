@@ -1,6 +1,6 @@
 export const ROUTE_TITLES: Record<string, string> = {
-	'/manager/requests': 'Все заявки',
 	'/manager/requests/create': 'Создать заявку',
+	'/manager/requests': 'Все заявки',
 	'/manager/statistics': 'Статистика',
 
 	'/admin/requests': 'Все заявки',

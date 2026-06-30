@@ -7,8 +7,8 @@ import type { AuthUser, UserRole } from '@/features/auth/schema'
 import { getCurrentUser as requestCurrentUser } from '@/features/auth/service'
 
 export const ROLE_HOME_PATH: Record<UserRole, string> = {
-	manager: '/manager',
-	admin: '/admin'
+	manager: '/manager/requests',
+	admin: '/admin/requests'
 }
 
 export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
