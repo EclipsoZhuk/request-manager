@@ -1,32 +1,33 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Nunito_Sans } from 'next/font/google'
 
 import './globals.css'
 
-const geistSans = Geist({
-	variable: '--font-geist-sans',
-	subsets: ['latin', 'cyrillic']
-})
+const SITE_NAME = 'Request Manager'
 
-const geistMono = Geist_Mono({
-	variable: '--font-geist-mono',
-	subsets: ['latin', 'cyrillic']
+const nunitoSans = Nunito_Sans({
+	variable: '--font-nunito-sans',
+	subsets: ['latin', 'cyrillic'],
+	display: 'swap'
 })
 
 export const metadata: Metadata = {
-	title: 'Request Manager',
+	title: {
+		default: SITE_NAME,
+		template: `%s | ${SITE_NAME}`
+	},
 	description: 'Система управления заявками'
 }
 
-type RootLayoutProps = {
+type RootLayoutProps = Readonly<{
 	children: React.ReactNode
-}
+}>
 
 export default function RootLayout({ children }: RootLayoutProps) {
 	return (
 		<html
 			lang='ru'
-			className={`${geistSans.variable} ${geistMono.variable}`}
+			className={`${nunitoSans.variable} antialiased`}
 		>
 			<body>{children}</body>
 		</html>

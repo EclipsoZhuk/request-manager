@@ -27,8 +27,8 @@ export default async function LoginPage() {
 
 			<div className='absolute inset-0 bg-white/10' />
 
-			<section className='relative z-10 w-full max-w-[540px] rounded-[24px] border border-black/25 bg-white px-8 py-12 shadow-[0_4px_20px_rgba(0,0,0,0.04)] sm:px-13 sm:py-15'>
-				<div className='mb-10 flex flex-col items-center sm:mb-12'>
+			<section className='relative z-10 w-full max-w-[630px] rounded-[24px] border border-black/25 bg-white px-13 py-15 shadow-[0_4px_20px_rgba(0,0,0,0.04)]'>
+				<div className='mb-12 flex flex-col items-center'>
 					<Zap
 						aria-hidden='true'
 						className='fill-primary text-primary mb-7 size-11'
