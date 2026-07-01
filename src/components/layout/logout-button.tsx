@@ -8,7 +8,7 @@ export function LogoutButton() {
 			<Button
 				type='submit'
 				variant='secondary'
-				className='min-w-28'
+				className='min-w-31.5'
 			>
 				Выход
 			</Button>

@@ -38,7 +38,7 @@ function SidebarLink({ item, pathname, isChild = false }: SidebarLinkProps) {
 				href={item.href}
 				aria-current={isActive ? 'page' : undefined}
 				className={cn(
-					'flex min-h-10 items-center px-4 py-2 pl-8 text-sm transition-colors',
+					'flex min-h-12.5 items-center px-4 py-2 pl-10 transition-colors',
 					isActive
 						? 'text-primary font-semibold'
 						: 'text-sidebar-foreground hover:text-primary'
@@ -54,14 +54,14 @@ function SidebarLink({ item, pathname, isChild = false }: SidebarLinkProps) {
 			href={item.href}
 			aria-current={isActive ? 'page' : undefined}
 			className={cn(
-				'relative flex min-h-11 items-center rounded-md px-4 text-sm font-medium transition-colors',
+				'relative flex min-h-12.5 items-center rounded-md px-4 py-2 transition-colors',
 				isActive
 					? 'bg-primary text-primary-foreground'
 					: 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
 			)}
 		>
 			{isActive && (
-				<span className='bg-primary absolute top-0 -left-5 h-full w-1 rounded-r-full' />
+				<span className='bg-primary absolute top-0 -left-5 h-full w-1.5 rounded-r-full' />
 			)}
 
 			{item.label}
@@ -74,8 +74,8 @@ export function AppSidebar({ role }: AppSidebarProps) {
 	const navigation = navigationByRole[role]
 
 	return (
-		<aside className='bg-sidebar hidden w-50 shrink-0 border-r lg:block'>
-			<nav className='flex flex-col gap-2 p-5'>
+		<aside className='bg-sidebar hidden w-59 shrink-0 border-r lg:block'>
+			<nav className='flex flex-col gap-1.5 p-5 font-semibold'>
 				{navigation.map(item => {
 					if (item.type === 'link') {
 						return (
@@ -99,19 +99,19 @@ export function AppSidebar({ role }: AppSidebarProps) {
 						>
 							<CollapsibleTrigger
 								className={cn(
-									'group relative flex min-h-15 w-full items-center justify-between rounded-md px-4 text-left text-sm font-medium transition-colors',
+									'group relative flex min-h-17.5 w-full items-center justify-between rounded-md px-4 py-2 text-left transition-colors',
 									hasActiveChild
 										? 'bg-primary text-primary-foreground'
 										: 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
 								)}
 							>
 								{hasActiveChild && (
-									<span className='bg-primary absolute top-0 -left-5 h-full w-1 rounded-r-full' />
+									<span className='bg-primary absolute top-0 -left-5 h-full w-1.5 rounded-r-full' />
 								)}
 
-								<span className='max-w-28 leading-5'>{item.label}</span>
+								<span className='leading-5'>{item.label}</span>
 
-								<ChevronUp className='size-4 shrink-0 transition-transform group-data-[state=closed]:rotate-180' />
+								<ChevronUp className='size-5 shrink-0 transition-transform group-data-[state=closed]:rotate-180' />
 							</CollapsibleTrigger>
 
 							<CollapsibleContent>

@@ -1,13 +1,27 @@
 import type { Metadata } from 'next'
 
+import { getMockRequests } from '@/features/requests/mock'
+import { RequestsPageContent } from '@/features/requests/requests-page-content'
+
 export const metadata: Metadata = {
 	title: 'Все заявки'
 }
 
-export default function AdminRequestsPage() {
+type AdminRequestsPageProps = {
+	searchParams: Promise<{
+		search?: string
+	}>
+}
+
+export default async function AdminRequestsPage({
+	searchParams
+}: AdminRequestsPageProps) {
+	const { search } = await searchParams
+
 	return (
-		<section>
-			<h2 className='text-2xl font-semibold'>Все заявки</h2>
-		</section>
+		<RequestsPageContent
+			requests={getMockRequests(search)}
+			search={search}
+		/>
 	)
 }

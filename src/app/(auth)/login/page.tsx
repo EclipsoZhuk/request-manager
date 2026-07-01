@@ -25,7 +25,7 @@ export default async function LoginPage() {
 				}}
 			/>
 
-			<section className='bg-card relative w-full max-w-157.5 space-y-10 rounded-[24px] border border-[#B9B9B9] px-15 py-20'>
+			<section className='bg-card relative w-full max-w-157.5 space-y-10 rounded-3xl border border-[#B9B9B9] px-15 py-20'>
 				<div className='flex flex-col items-center space-y-10'>
 					<Image
 						src='/images/logo.svg'

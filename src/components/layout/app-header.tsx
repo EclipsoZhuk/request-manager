@@ -1,6 +1,6 @@
 'use client'
 
-import { Zap } from 'lucide-react'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 import { getRouteTitle } from '@/config/routes'
@@ -12,10 +12,18 @@ export function AppHeader() {
 	const title = getRouteTitle(pathname)
 
 	return (
-		<header className='bg-card flex h-18 shrink-0 items-center justify-between border-b px-6 lg:px-10'>
-			<div className='flex min-w-0 items-center gap-3'>
-				<Zap className='fill-primary text-primary size-8 shrink-0' />
-				<h1 className='truncate text-2xl font-semibold'>{title}</h1>
+		<header className='bg-card flex h-18 shrink-0 items-center justify-between border-b px-11'>
+			<div className='flex min-w-0 items-center gap-2.5'>
+				<Image
+					src='/images/logo.svg'
+					alt='Logo'
+					width={32}
+					height={32}
+					unoptimized
+					priority
+					className='size-8'
+				/>
+				<h1 className='truncate text-[32px] font-bold'>{title}</h1>
 			</div>
 			<LogoutButton />
 		</header>
