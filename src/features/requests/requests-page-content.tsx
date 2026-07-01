@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react'
+import Image from 'next/image'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -29,15 +29,15 @@ const STATUS_CONFIG: Record<
 > = {
 	cancelled: {
 		label: 'Cancelled',
-		className: 'bg-[#ffe0eb] text-[#e85f91]'
+		className: 'bg-chart-4/20 text-chart-4'
 	},
 	in_progress: {
 		label: 'In Progress',
-		className: 'bg-[#ffe9d8] text-[#e88743]'
+		className: 'bg-chart-3/20 text-chart-3'
 	},
 	paid: {
 		label: 'Paid',
-		className: 'bg-[#dcf7d2] text-[#58a848]'
+		className: 'bg-[#79FF4833] text-chart-2'
 	}
 }
 
@@ -55,7 +55,7 @@ function RequestStatusBadge({ status }: { status: RequestStatus }) {
 	return (
 		<span
 			className={cn(
-				'inline-flex min-h-6 items-center rounded-lg px-2.5 py-1 text-[11px] leading-none font-bold whitespace-nowrap',
+				'inline-flex min-h-5.5 items-center rounded-xl px-2 py-1 text-[10px] leading-none font-bold whitespace-nowrap',
 				config.className
 			)}
 		>
@@ -69,15 +69,20 @@ export function RequestsPageContent({
 	search = ''
 }: RequestsPageContentProps) {
 	return (
-		<section className='space-y-4'>
-			<div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
+		<section className='flex min-h-0 flex-1 flex-col gap-5'>
+			<div className='flex items-center justify-between gap-3'>
 				<form
 					method='get'
-					className='relative w-full max-w-[340px]'
+					className='relative w-full max-w-85'
 				>
-					<Search
-						aria-hidden='true'
-						className='text-foreground absolute top-1/2 left-4 size-5 -translate-y-1/2'
+					<Image
+						src='/images/icons/search-lg.svg'
+						alt='Search'
+						width={18}
+						height={18}
+						unoptimized
+						priority
+						className='absolute top-1/2 left-5 size-4.5 -translate-y-1/2'
 					/>
 
 					<Input
@@ -85,61 +90,29 @@ export function RequestsPageContent({
 						name='search'
 						defaultValue={search}
 						placeholder='Поиск по (Адрес кошелька, Txn Hash)'
-						className='h-10 rounded-xl border-0 bg-white pr-4 pl-11 text-sm font-semibold shadow-none'
+						className='bg-card placeholder:text-foreground h-11 rounded-xl border-0 pr-2 pl-13.5 text-sm font-bold'
 					/>
 				</form>
 
 				<RequestFilter />
 			</div>
 
-			<div className='bg-card overflow-hidden rounded-xl border'>
-				<div className='overflow-x-auto'>
-					<Table className='min-w-[1180px]'>
+			<div className='bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border'>
+				<div className='min-h-0 flex-1 overflow-auto'>
+					<Table className='min-w-295'>
 						<TableHeader>
-							<TableRow className='h-12 bg-white hover:bg-white'>
-								<TableHead className='text-foreground w-[70px] px-4 text-xs font-bold'>
-									ID
-								</TableHead>
-
-								<TableHead className='text-foreground w-[110px] px-3 text-xs font-bold'>
-									Дата создания
-								</TableHead>
-
-								<TableHead className='text-foreground w-[145px] px-3 text-xs font-bold'>
-									Создатель заявки
-								</TableHead>
-
-								<TableHead className='text-foreground w-[170px] px-3 text-xs font-bold'>
-									Регион
-								</TableHead>
-
-								<TableHead className='text-foreground w-[80px] px-3 text-xs font-bold'>
-									Сумма
-								</TableHead>
-
-								<TableHead className='text-foreground w-[135px] px-3 text-xs font-bold'>
-									Адрес
-								</TableHead>
-
-								<TableHead className='text-foreground w-[95px] px-3 text-xs font-bold'>
-									Цель
-								</TableHead>
-
-								<TableHead className='text-foreground w-[105px] px-3 text-xs font-bold'>
-									Срок жизни
-								</TableHead>
-
-								<TableHead className='text-foreground w-[105px] px-3 text-xs font-bold'>
-									Статус
-								</TableHead>
-
-								<TableHead className='text-foreground w-[135px] px-3 text-xs font-bold'>
-									Txn Hash
-								</TableHead>
-
-								<TableHead className='text-foreground w-[120px] px-3 text-center text-xs font-bold'>
-									Скриншот
-								</TableHead>
+							<TableRow className='bg-[#FCFDFD] hover:bg-[#FCFDFD]'>
+								<TableHead>ID</TableHead>
+								<TableHead>Дата создания</TableHead>
+								<TableHead>Создатель заявки</TableHead>
+								<TableHead>Регион</TableHead>
+								<TableHead>Сумма</TableHead>
+								<TableHead>Адрес</TableHead>
+								<TableHead>Цель</TableHead>
+								<TableHead>Срок жизни</TableHead>
+								<TableHead>Статус</TableHead>
+								<TableHead>Txn Hash</TableHead>
+								<TableHead>Скриншот</TableHead>
 							</TableRow>
 						</TableHeader>
 
@@ -147,60 +120,32 @@ export function RequestsPageContent({
 							{requests.map(request => (
 								<TableRow
 									key={request.id}
-									className='hover:bg-muted/20 h-[58px]'
+									className='hover:bg-muted/50 h-14.5'
 								>
-									<TableCell className='px-4 text-xs font-medium'>
-										{request.id}
-									</TableCell>
-
-									<TableCell className='px-3 text-xs whitespace-nowrap'>
-										{request.createdAt}
-									</TableCell>
-
-									<TableCell className='px-3 text-xs whitespace-nowrap'>
-										{request.creator}
-									</TableCell>
-
-									<TableCell className='max-w-[170px] px-3 text-xs leading-4'>
-										{request.regions}
-									</TableCell>
-
-									<TableCell className='text-primary px-3 text-xs font-bold'>
+									<TableCell>{request.id}</TableCell>
+									<TableCell>{request.createdAt}</TableCell>
+									<TableCell>{request.creator}</TableCell>
+									<TableCell>{request.regions}</TableCell>
+									<TableCell className='text-primary font-bold'>
 										{request.amount}
 									</TableCell>
-
-									<TableCell
-										title={request.wallet}
-										className='px-3 text-xs whitespace-nowrap'
-									>
+									<TableCell title={request.wallet}>
 										{shortenValue(request.wallet)}
 									</TableCell>
-
-									<TableCell className='px-3 text-xs'>
-										{request.paymentGoal}
-									</TableCell>
-
-									<TableCell className='px-3 text-xs whitespace-nowrap'>
-										{request.lifetime}
-									</TableCell>
-
-									<TableCell className='px-3'>
+									<TableCell>{request.paymentGoal}</TableCell>
+									<TableCell>{request.lifetime}</TableCell>
+									<TableCell>
 										<RequestStatusBadge status={request.status} />
 									</TableCell>
-
-									<TableCell
-										title={request.txnHash}
-										className='px-3 text-xs whitespace-nowrap'
-									>
+									<TableCell title={request.txnHash}>
 										{shortenValue(request.txnHash)}
 									</TableCell>
-
-									<TableCell className='px-3 text-center'>
+									<TableCell>
 										{request.hasScreenshot ? (
 											<Button
 												type='button'
 												variant='outline'
-												className='border-primary text-primary hover:bg-primary/5 hover:text-primary h-9 min-w-[92px] rounded-xl text-xs font-bold'
+												className='w-31.5'
 											>
 												SCRN
 											</Button>
@@ -212,10 +157,10 @@ export function RequestsPageContent({
 							))}
 
 							{requests.length === 0 && (
-								<TableRow>
+								<TableRow className='hover:bg-card'>
 									<TableCell
 										colSpan={11}
-										className='text-muted-foreground h-40 text-center'
+										className='text-muted-foreground h-160 text-center font-normal'
 									>
 										Заявки не найдены
 									</TableCell>

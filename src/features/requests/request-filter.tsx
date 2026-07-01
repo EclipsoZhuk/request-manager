@@ -1,14 +1,14 @@
 'use client'
 
-import { ChevronDown } from 'lucide-react'
+import { useState } from 'react'
 
-import { Button } from '@/components/ui/button'
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue
+} from '@/components/ui/select'
 
 const FILTER_ITEMS = [
 	'Период создания',
@@ -21,37 +21,33 @@ const FILTER_ITEMS = [
 ]
 
 export function RequestFilter() {
-	return (
-		<DropdownMenu>
-			<DropdownMenuTrigger asChild>
-				<Button
-					type='button'
-					variant='secondary'
-					className='h-10 w-[160px] justify-between rounded-xl bg-white px-4 text-sm font-semibold hover:bg-white'
-				>
-					Фильтр
-					<ChevronDown className='size-4' />
-				</Button>
-			</DropdownMenuTrigger>
+	const [filter, setFilter] = useState('')
 
-			<DropdownMenuContent
-				align='end'
-				sideOffset={8}
-				className='w-[190px] rounded-xl border-0 bg-white p-2 shadow-md'
+	return (
+		<Select
+			value={filter}
+			onValueChange={setFilter}
+		>
+			<SelectTrigger className='bg-card text-foreground data-placeholder:text-foreground max-h-11 w-45 rounded-xl border-0 px-5 text-sm font-bold'>
+				<SelectValue placeholder='Фильтр' />
+			</SelectTrigger>
+
+			<SelectContent
+				position='popper'
+				align='start'
+				sideOffset={4}
+				className='bg-card ring-foreground/0 w-45 rounded-xl shadow'
 			>
-				{FILTER_ITEMS.map((item, index) => (
-					<DropdownMenuItem
+				{FILTER_ITEMS.map(item => (
+					<SelectItem
 						key={item}
-						className={
-							index === 0
-								? 'bg-muted focus:bg-muted h-10 rounded-lg px-3 text-sm font-semibold'
-								: 'h-10 rounded-lg px-3 text-sm font-semibold'
-						}
+						value={item}
+						className='h-10 rounded-lg px-2.5 text-sm font-bold'
 					>
 						{item}
-					</DropdownMenuItem>
+					</SelectItem>
 				))}
-			</DropdownMenuContent>
-		</DropdownMenu>
+			</SelectContent>
+		</Select>
 	)
 }
