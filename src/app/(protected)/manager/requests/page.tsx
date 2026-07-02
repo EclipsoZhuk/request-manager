@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 
-import { Button } from '@/components/ui/button'
-
 import { getMockRequests } from '@/features/requests/mock'
 import { RequestsPageContent } from '@/features/requests/requests-page-content'
 
@@ -28,11 +26,6 @@ export default async function ManagerRequestsPage({
 				requests={requests}
 				search={search}
 			/>
-
-			<div className='mt-5 flex shrink-0 justify-between gap-3'>
-				<Button>Новая заявка</Button>
-				<Button>Другая кнопка</Button>
-			</div>
 		</div>
 	)
 }

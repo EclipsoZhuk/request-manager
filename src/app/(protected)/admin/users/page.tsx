@@ -1,13 +1,12 @@
 import type { Metadata } from 'next'
 
+import { adminUsers } from '@/features/admin/mock'
+import { UsersPageContent } from '@/features/admin/users-page-content'
+
 export const metadata: Metadata = {
 	title: 'Пользователи'
 }
 
 export default function AdminUsersPage() {
-	return (
-		<section>
-			<h2 className='text-2xl font-semibold'>Пользователи</h2>
-		</section>
-	)
+	return <UsersPageContent users={adminUsers} />
 }
