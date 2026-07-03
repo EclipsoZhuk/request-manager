@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function AdminPaymentGoalsPage() {
-	return <PaymentGoalsPageContent initialPaymentGoals={adminPaymentGoals} />
+	return (
+		<div className='h-full min-h-0'>
+			<PaymentGoalsPageContent initialPaymentGoals={adminPaymentGoals} />
+		</div>
+	)
 }

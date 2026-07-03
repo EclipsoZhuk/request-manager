@@ -110,9 +110,9 @@ export function PaymentGoalsPageContent({
 
 	return (
 		<>
-			<section className='flex min-h-0 flex-1 flex-col gap-4'>
-				<div className='bg-card overflow-hidden rounded-xl border'>
-					<div className='overflow-x-auto'>
+			<section className='flex h-full min-h-0 flex-col gap-5'>
+				<div className='bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border'>
+					<div className='relative min-h-0 flex-1 overflow-auto'>
 						<Table className='min-w-200 table-fixed'>
 							<TableHeader>
 								<TableRow className='bg-[#FCFDFD] hover:bg-[#FCFDFD]'>
@@ -177,14 +177,16 @@ export function PaymentGoalsPageContent({
 					</div>
 				</div>
 
-				<Button
-					type='button'
-					size='lg'
-					onClick={handleOpenCreateDialog}
-					className='max-w-104'
-				>
-					Добавить новую цель
-				</Button>
+				<div className='shrink-0'>
+					<Button
+						type='button'
+						size='lg'
+						onClick={handleOpenCreateDialog}
+						className='w-full max-w-104'
+					>
+						Добавить новую цель
+					</Button>
+				</div>
 			</section>
 
 			<Dialog

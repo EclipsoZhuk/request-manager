@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function AdminLimitsPage() {
-	return <LimitsPageContent limits={adminLimits} />
+	return (
+		<div className='h-full min-h-0'>
+			<LimitsPageContent limits={adminLimits} />
+		</div>
+	)
 }

@@ -26,174 +26,156 @@ export type AdminPaymentGoal = {
 }
 
 export const adminRegions: AdminRegion[] = [
-	{
-		id: 'all',
-		label: 'Регион'
-	},
-	{
-		id: 'region-241',
-		label: 'Region 241'
-	},
-	{
-		id: 'region-242',
-		label: 'Region 242'
-	},
-	{
-		id: 'region-243',
-		label: 'Region 243'
-	},
-	{
-		id: 'region-244',
-		label: 'Region 244'
-	},
-	{
-		id: 'region-245',
-		label: 'Region 245'
-	}
+	{ id: 'all', label: 'Все регионы' },
+	{ id: 'region-241', label: 'Регион 222' },
+	{ id: 'region-242', label: 'Регион Альфа' },
+	{ id: 'region-243', label: 'Регион Бета' },
+	{ id: 'region-244', label: 'Регион Гамма' },
+	{ id: 'region-245', label: 'Регион Дельта' }
 ]
 
 export const adminUsers: AdminUser[] = [
 	{
 		id: '1',
 		login: 'User 012412',
-		mainRegion: 'Region 241',
+		mainRegion: 'Регион 222',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 222',
+			'Регион 112',
+			'Регион 222',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	},
 	{
 		id: '2',
 		login: 'User 012413',
-		mainRegion: 'Region 242',
+		mainRegion: 'Регион Альфа',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	},
 	{
 		id: '3',
 		login: 'User 012414',
-		mainRegion: 'Region 243',
+		mainRegion: 'Регион Бета',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	},
 	{
 		id: '4',
 		login: 'User 012415',
-		mainRegion: 'Region 244',
+		mainRegion: 'Регион Гамма',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	},
 	{
 		id: '5',
 		login: 'User 012416',
-		mainRegion: 'Region 245',
+		mainRegion: 'Регион Дельта',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	},
 	{
 		id: '6',
 		login: 'User 012417',
-		mainRegion: 'Region 246',
+		mainRegion: 'Регион 246',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	},
 	{
 		id: '7',
 		login: 'User 012418',
-		mainRegion: 'Region 247',
+		mainRegion: 'Регион 247',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241'
 		]
 	},
 	{
 		id: '8',
 		login: 'User 012419',
-		mainRegion: 'Region 248',
+		mainRegion: 'Регион 248',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	},
 	{
 		id: '9',
 		login: 'User 012420',
-		mainRegion: 'Region 249',
+		mainRegion: 'Регион 249',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	},
 	{
 		id: '10',
 		login: 'User 012421',
-		mainRegion: 'Region 250',
+		mainRegion: 'Регион 250',
 		additionalRegions: [
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112',
-			'Region 241',
-			'Region 112'
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112',
+			'Регион 241',
+			'Регион 112'
 		]
 	}
 ]
@@ -201,51 +183,51 @@ export const adminUsers: AdminUser[] = [
 export const adminLimits: AdminLimit[] = [
 	{
 		id: '1',
-		region: 'Region 241',
+		region: 'Регион 241',
 		limit: 1000,
 		currentBalance: 2000
 	},
 	{
 		id: '2',
-		region: 'Region 242',
+		region: 'Регион 242',
 		limit: 25000.125,
 		currentBalance: 1000
 	},
 	{
 		id: '3',
-		region: 'Region 243',
+		region: 'Регион 243',
 		limit: 1000,
 		currentBalance: 3000
 	},
 	{
 		id: '4',
-		region: 'Region 244',
+		region: 'Регион 244',
 		limit: 1250.5,
 		currentBalance: 15000
 	},
 	{
 		id: '5',
-		region: 'Region 245',
+		region: 'Регион 245',
 		limit: null,
 		currentBalance: 500,
 		mutedBalance: true
 	},
 	{
 		id: '6',
-		region: 'Region 246',
+		region: 'Регион 246',
 		limit: 25000.125,
 		currentBalance: 1000
 	},
 	{
 		id: '7',
-		region: 'Region 247',
+		region: 'Регион 247',
 		limit: null,
 		currentBalance: 2000,
 		mutedBalance: true
 	},
 	{
 		id: '8',
-		region: 'Region 248',
+		region: 'Регион 248',
 		limit: 1250.5,
 		currentBalance: 3000
 	}

@@ -60,9 +60,9 @@ export function StatisticsPageContent({
 	)
 
 	return (
-		<section className='flex h-full min-h-0 flex-col gap-4'>
+		<section className='flex h-full min-h-0 flex-col gap-5'>
 			<div className='flex shrink-0 items-center justify-between gap-4'>
-				<div className='flex min-w-0 flex-wrap items-center gap-4'>
+				<div className='flex min-w-0 flex-wrap items-center gap-5'>
 					{variant === 'manager' && (
 						<>
 							<StatisticsFilter

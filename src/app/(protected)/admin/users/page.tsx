@@ -8,5 +8,9 @@ export const metadata: Metadata = {
 }
 
 export default function AdminUsersPage() {
-	return <UsersPageContent users={adminUsers} />
+	return (
+		<div className='h-full min-h-0'>
+			<UsersPageContent users={adminUsers} />
+		</div>
+	)
 }

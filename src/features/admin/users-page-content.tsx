@@ -5,13 +5,6 @@ import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue
-} from '@/components/ui/select'
-import {
 	Table,
 	TableBody,
 	TableCell,
@@ -21,6 +14,7 @@ import {
 } from '@/components/ui/table'
 
 import { type AdminRegion, type AdminUser, adminRegions } from './mock'
+import { UsersFilter } from './users-filter'
 
 type UsersPageContentProps = {
 	users: AdminUser[]
@@ -55,30 +49,19 @@ export function UsersPageContent({
 	}, [regions, selectedRegion, users])
 
 	return (
-		<section className='flex min-h-0 flex-1 flex-col gap-4'>
-			<Select
-				value={selectedRegion}
-				onValueChange={setSelectedRegion}
-			>
-				<SelectTrigger className='bg-card h-11 w-45 rounded-xl border-0 px-5 font-semibold shadow-none'>
-					<SelectValue placeholder='Регион' />
-				</SelectTrigger>
+		<section className='flex h-full min-h-0 flex-col gap-5'>
+			<div className='flex shrink-0 items-center justify-between gap-4'>
+				<div className='flex min-w-0 flex-wrap items-center gap-5'>
+					<UsersFilter
+						regions={regions}
+						setSelectedRegion={setSelectedRegion}
+					/>
+				</div>
+			</div>
 
-				<SelectContent className='rounded-xl'>
-					{regions.map(region => (
-						<SelectItem
-							key={region.id}
-							value={region.id}
-						>
-							{region.label}
-						</SelectItem>
-					))}
-				</SelectContent>
-			</Select>
-
-			<div className='bg-card overflow-hidden rounded-xl border'>
-				<div className='overflow-x-auto'>
-					<Table className='min-w-[1050px] table-fixed'>
+			<div className='bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border'>
+				<div className='relative min-h-0 flex-1 overflow-auto'>
+					<Table className='min-w-262 table-fixed'>
 						<TableHeader>
 							<TableRow className='bg-[#FCFDFD] hover:bg-[#FCFDFD]'>
 								<TableHead className='w-[25%]'>Логин пользователя</TableHead>
@@ -92,13 +75,11 @@ export function UsersPageContent({
 							{filteredUsers.map(user => (
 								<TableRow
 									key={user.id}
-									className='hover:bg-muted h-[72px]'
+									className='h-18'
 								>
 									<TableCell>{user.login}</TableCell>
-
 									<TableCell>{user.mainRegion}</TableCell>
-
-									<TableCell className='truncate leading-5'>
+									<TableCell className='truncate'>
 										{user.additionalRegions.join(', ')}
 									</TableCell>
 

@@ -28,9 +28,9 @@ function formatAmount(value: number | null) {
 
 export function LimitsPageContent({ limits }: LimitsPageContentProps) {
 	return (
-		<section className='flex min-h-0 flex-1 flex-col'>
-			<div className='bg-card overflow-hidden rounded-xl border'>
-				<div className='overflow-x-auto'>
+		<section className='flex h-full min-h-0 flex-col gap-5'>
+			<div className='bg-card flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border'>
+				<div className='relative min-h-0 flex-1 overflow-auto'>
 					<Table className='min-w-200 table-fixed'>
 						<TableHeader>
 							<TableRow className='bg-[#FCFDFD] hover:bg-[#FCFDFD]'>
