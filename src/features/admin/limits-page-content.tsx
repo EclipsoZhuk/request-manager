@@ -31,20 +31,12 @@ export function LimitsPageContent({ limits }: LimitsPageContentProps) {
 		<section className='flex min-h-0 flex-1 flex-col'>
 			<div className='bg-card overflow-hidden rounded-xl border'>
 				<div className='overflow-x-auto'>
-					<Table className='min-w-[800px] table-fixed'>
+					<Table className='min-w-200 table-fixed'>
 						<TableHeader>
 							<TableRow className='bg-[#FCFDFD] hover:bg-[#FCFDFD]'>
-								<TableHead className='w-1/3 font-bold'>
-									Основной Регион
-								</TableHead>
-
-								<TableHead className='w-1/3 font-bold'>
-									Сумма лимита в USDT
-								</TableHead>
-
-								<TableHead className='w-1/3 font-bold'>
-									Актуальный остаток
-								</TableHead>
+								<TableHead className='w-1/3'>Основной Регион</TableHead>
+								<TableHead className='w-1/3'>Сумма лимита в USDT</TableHead>
+								<TableHead className='w-1/3'>Актуальный остаток</TableHead>
 							</TableRow>
 						</TableHeader>
 
@@ -52,16 +44,12 @@ export function LimitsPageContent({ limits }: LimitsPageContentProps) {
 							{limits.map(limit => (
 								<TableRow
 									key={limit.id}
-									className='hover:bg-muted h-[72px]'
+									className='h-18'
 								>
 									<TableCell>{limit.region}</TableCell>
-
 									<TableCell>{formatAmount(limit.limit)}</TableCell>
-
 									<TableCell
-										className={cn(
-											limit.mutedBalance && 'text-muted-foreground/50'
-										)}
+										className={cn(limit.mutedBalance && 'text-foreground/30')}
 									>
 										{formatAmount(limit.currentBalance)}
 									</TableCell>
@@ -72,7 +60,7 @@ export function LimitsPageContent({ limits }: LimitsPageContentProps) {
 								<TableRow>
 									<TableCell
 										colSpan={3}
-										className='text-muted-foreground h-80 text-center'
+										className='text-muted-foreground bg-card h-160 text-center'
 									>
 										Лимиты не найдены
 									</TableCell>

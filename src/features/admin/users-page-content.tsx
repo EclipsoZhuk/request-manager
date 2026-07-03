@@ -81,19 +81,10 @@ export function UsersPageContent({
 					<Table className='min-w-[1050px] table-fixed'>
 						<TableHeader>
 							<TableRow className='bg-[#FCFDFD] hover:bg-[#FCFDFD]'>
-								<TableHead className='w-[25%] font-bold'>
-									Логин пользователя
-								</TableHead>
-
-								<TableHead className='w-[25%] font-bold'>
-									Основной Регион
-								</TableHead>
-
+								<TableHead className='w-[25%]'>Логин пользователя</TableHead>
+								<TableHead className='w-[25%]'>Основной Регион</TableHead>
 								<TableHead>Дополнительные Регионы</TableHead>
-
-								<TableHead className='w-[10%] text-center font-bold'>
-									Изменить
-								</TableHead>
+								<TableHead className='w-[10%]'>Изменить</TableHead>
 							</TableRow>
 						</TableHeader>
 
@@ -111,15 +102,14 @@ export function UsersPageContent({
 										{user.additionalRegions.join(', ')}
 									</TableCell>
 
-									<TableCell className='text-center'>
+									<TableCell>
 										<Button
 											type='button'
 											variant='outline'
 											size='icon'
 											aria-label={`Редактировать ${user.login}`}
-											className='border-primary text-primary size-10 rounded-xl'
 										>
-											<Pencil className='size-4' />
+											<Pencil />
 										</Button>
 									</TableCell>
 								</TableRow>

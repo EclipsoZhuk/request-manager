@@ -26,7 +26,7 @@ type StatisticsPageContentProps = {
 
 const FIRST_COLUMN_CLASS = 'sticky left-0 z-10 w-85 min-w-85 max-w-85'
 
-const REGION_COLUMN_CLASS = 'w-35 min-w-35 whitespace-nowrap'
+const REGION_COLUMN_CLASS = 'w-35 min-w-35'
 
 export function StatisticsPageContent({
 	regions,
@@ -106,16 +106,14 @@ export function StatisticsPageContent({
 											key={region.id}
 											className={REGION_COLUMN_CLASS}
 										>
-											<div className='flex items-center gap-1 font-bold'>
-												{region.label}
-											</div>
+											{region.label}
 										</TableHead>
 									))}
 								</TableRow>
 							</TableHeader>
 
 							<TableBody>
-								<TableRow className='bg-primary/10 hover:bg-primary/10'>
+								<TableRow className='bg-primary/10 hover:bg-primary/10 h-14.5'>
 									<TableCell
 										className={`${FIRST_COLUMN_CLASS} bg-[#E7EEFC] font-bold`}
 									>
@@ -132,7 +130,7 @@ export function StatisticsPageContent({
 									))}
 								</TableRow>
 
-								<TableRow className='bg-primary/10 hover:bg-primary/10'>
+								<TableRow className='bg-primary/10 hover:bg-primary/10 h-14.5'>
 									<TableCell
 										className={`${FIRST_COLUMN_CLASS} bg-[#E7EEFC] font-bold`}
 									>
@@ -170,9 +168,7 @@ export function StatisticsPageContent({
 										key={region.id}
 										className={`${REGION_COLUMN_CLASS} sticky top-0 z-20 bg-[#FCFDFD]`}
 									>
-										<div className='flex items-center gap-1 font-bold'>
-											{region.label}
-										</div>
+										{region.label}
 									</TableHead>
 								))}
 							</TableRow>
@@ -182,7 +178,7 @@ export function StatisticsPageContent({
 							{paymentGoals.map(paymentGoal => (
 								<TableRow
 									key={paymentGoal.id}
-									className='group hover:bg-muted/50 h-14.5'
+									className='group h-14.5'
 								>
 									<TableCell
 										className={`${FIRST_COLUMN_CLASS} bg-card group-hover:bg-muted`}

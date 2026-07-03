@@ -194,7 +194,7 @@ export function StatisticsDateRange({
 				className='w-auto overflow-hidden rounded-xl border-0 p-0 shadow-2xl'
 			>
 				<div className='flex'>
-					<div className='w-45 shrink-0 border-r p-3'>
+					<div className='w-48 shrink-0 border-r p-3'>
 						<div className='space-y-1'>
 							{PRESETS.map(preset => (
 								<button
@@ -202,7 +202,7 @@ export function StatisticsDateRange({
 									type='button'
 									onClick={() => handlePresetSelect(preset)}
 									className={cn(
-										'hover:bg-muted flex h-9 w-full items-center rounded-lg px-3 text-left text-sm font-medium transition-colors',
+										'hover:bg-primary/10 hover:text-primary flex h-10 w-full items-center rounded-md px-4 font-medium transition-colors',
 										activePreset === preset.label &&
 											'bg-primary/10 text-primary'
 									)}
@@ -215,7 +215,7 @@ export function StatisticsDateRange({
 								type='button'
 								onClick={() => setActivePreset('custom')}
 								className={cn(
-									'hover:bg-muted flex h-9 w-full items-center rounded-lg px-3 text-left text-sm font-medium transition-colors',
+									'hover:bg-primary/10 hover:text-primary flex h-10 w-full items-center rounded-md px-4 font-medium transition-colors',
 									activePreset === 'custom' && 'bg-primary/10 text-primary'
 								)}
 							>
@@ -236,10 +236,10 @@ export function StatisticsDateRange({
 							month={calendarMonth}
 							onMonthChange={setCalendarMonth}
 							numberOfMonths={2}
-							className='p-4'
+							className='px-6 py-5'
 						/>
 
-						<div className='flex items-center justify-between gap-5 border-t p-3'>
+						<div className='flex items-center justify-between gap-5 border-t p-4'>
 							<div className='flex items-center gap-3'>
 								<div className='flex h-10 min-w-30 items-center justify-center rounded-lg border px-3 text-sm font-medium'>
 									{formatDate(draftRange?.from)}
@@ -259,7 +259,7 @@ export function StatisticsDateRange({
 									onClick={handleCancel}
 									className='text-primary border-primary h-10 rounded-lg px-7'
 								>
-									Cancel
+									Отмена
 								</Button>
 
 								<Button
@@ -268,7 +268,7 @@ export function StatisticsDateRange({
 									disabled={!draftRange?.from || !draftRange?.to}
 									className='h-10 rounded-lg px-7'
 								>
-									Apply
+									Применить
 								</Button>
 							</div>
 						</div>

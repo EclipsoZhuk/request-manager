@@ -29,7 +29,7 @@ export function StatisticsFilter({
 				setSelectedRegion(value)
 			}}
 		>
-			<SelectTrigger className='bg-card text-foreground data-placeholder:text-foreground max-h-11 w-45 rounded-xl border-0 px-5 text-sm font-bold'>
+			<SelectTrigger className='bg-card text-foreground data-placeholder:text-foreground max-h-11 w-50 rounded-xl border-0 px-5 text-sm font-bold'>
 				<SelectValue placeholder='Регион' />
 			</SelectTrigger>
 
@@ -37,7 +37,7 @@ export function StatisticsFilter({
 				position='popper'
 				align='start'
 				sideOffset={4}
-				className='bg-card ring-foreground/0 w-45 rounded-xl shadow'
+				className='bg-card ring-foreground/0 w-50 rounded-xl shadow'
 			>
 				{regions.map(region => (
 					<SelectItem
