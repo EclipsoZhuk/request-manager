@@ -1,13 +1,22 @@
 import type { Metadata } from 'next'
 
+import { CreateRequestPageContent } from '@/features/requests/create-request-page-content'
+import {
+	createRequestLifetimes,
+	createRequestPaymentGoals,
+	createRequestRegions
+} from '@/features/requests/mock'
+
 export const metadata: Metadata = {
 	title: 'Создать заявку'
 }
 
-export default function ManagerCreateRequestPage() {
+export default function CreateRequestPage() {
 	return (
-		<section>
-			<h2 className='text-2xl font-semibold'>Создать заявку</h2>
-		</section>
+		<CreateRequestPageContent
+			regions={createRequestRegions}
+			paymentGoals={createRequestPaymentGoals}
+			lifetimes={createRequestLifetimes}
+		/>
 	)
 }

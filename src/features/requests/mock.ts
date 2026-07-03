@@ -229,3 +229,76 @@ export function getMockRequests(search?: string) {
 		)
 	})
 }
+
+export type CreateRequestRegion = {
+	id: string
+	label: string
+	limit: number
+}
+
+export type CreateRequestPaymentGoal = {
+	id: string
+	label: string
+}
+
+export type CreateRequestLifetime = {
+	id: string
+	label: string
+	minutes: number
+}
+
+export const createRequestRegions: CreateRequestRegion[] = [
+	{
+		id: 'region-21',
+		label: 'Регион 21',
+		limit: 2000
+	},
+	{
+		id: 'region-53',
+		label: 'Регион 53',
+		limit: 4000
+	},
+	{
+		id: 'region-5411',
+		label: 'Регион 5411',
+		limit: 8000
+	},
+	{
+		id: 'region-5412',
+		label: 'Регион 5412',
+		limit: 5000
+	}
+]
+
+export const createRequestPaymentGoals: CreateRequestPaymentGoal[] = [
+	{
+		id: 'goal-1',
+		label: 'Оплата рекламной кампании'
+	},
+	{
+		id: 'goal-2',
+		label: 'Оплата услуг подрядчика'
+	},
+	{
+		id: 'goal-3',
+		label: 'Lorem ipsum dolar Lorem ipsum dolar'
+	}
+]
+
+export const createRequestLifetimes: CreateRequestLifetime[] = [
+	{
+		id: '30-minutes',
+		label: '30 минут',
+		minutes: 30
+	},
+	{
+		id: '1-hour',
+		label: '1 час',
+		minutes: 60
+	},
+	{
+		id: '2-hours',
+		label: '2 часа',
+		minutes: 120
+	}
+]
