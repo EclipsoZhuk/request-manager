@@ -2,9 +2,9 @@ import type { Metadata } from 'next'
 
 import { CreateRequestPageContent } from '@/features/requests/create-request-page-content'
 import {
-	createRequestLifetimes,
 	createRequestPaymentGoals,
-	createRequestRegions
+	createRequestRegions,
+	lifetimes
 } from '@/features/requests/mock'
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export default function CreateRequestPage() {
 		<CreateRequestPageContent
 			regions={createRequestRegions}
 			paymentGoals={createRequestPaymentGoals}
-			lifetimes={createRequestLifetimes}
+			lifetimes={lifetimes}
 		/>
 	)
 }

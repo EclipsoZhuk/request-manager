@@ -241,11 +241,23 @@ export type CreateRequestPaymentGoal = {
 	label: string
 }
 
-export type CreateRequestLifetime = {
-	id: string
-	label: string
-	minutes: number
-}
+export type CreateRequestLifetime =
+	| {
+			id: string
+			label: string
+			type: 'fixed'
+			minutes: number
+	  }
+	| {
+			id: string
+			label: string
+			type: 'unlimited'
+	  }
+	| {
+			id: string
+			label: string
+			type: 'custom'
+	  }
 
 export const createRequestRegions: CreateRequestRegion[] = [
 	{
@@ -285,20 +297,39 @@ export const createRequestPaymentGoals: CreateRequestPaymentGoal[] = [
 	}
 ]
 
-export const createRequestLifetimes: CreateRequestLifetime[] = [
+export const lifetimes: CreateRequestLifetime[] = [
+	{
+		id: '15-minutes',
+		label: '15 минут',
+		type: 'fixed',
+		minutes: 15
+	},
 	{
 		id: '30-minutes',
 		label: '30 минут',
+		type: 'fixed',
 		minutes: 30
 	},
 	{
 		id: '1-hour',
 		label: '1 час',
+		type: 'fixed',
 		minutes: 60
 	},
 	{
 		id: '2-hours',
 		label: '2 часа',
+		type: 'fixed',
 		minutes: 120
+	},
+	{
+		id: 'unlimited',
+		label: 'Бессрочно',
+		type: 'unlimited'
+	},
+	{
+		id: 'custom',
+		label: 'Указать самостоятельно',
+		type: 'custom'
 	}
 ]

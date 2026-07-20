@@ -180,7 +180,7 @@ export function LoginForm() {
 						<p
 							id='domain-error'
 							role='alert'
-							className='text-destructive text-sm'
+							className='text-destructive'
 						>
 							{errors.domain.message}
 						</p>

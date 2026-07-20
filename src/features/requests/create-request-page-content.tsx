@@ -1,8 +1,15 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Check, FileImage, Info, Trash2, UploadCloud } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import {
+	Check,
+	FileImage,
+	FileText,
+	Info,
+	Trash2,
+	UploadCloud
+} from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -36,6 +43,25 @@ type CreateRequestPageContentProps = {
 	lifetimes: CreateRequestLifetime[]
 }
 
+const CUSTOM_LIFETIME_ID = 'custom'
+const MAX_CUSTOM_LIFETIME_MINUTES = 7 * 24 * 60
+const EXPIRING_SOON_THRESHOLD_MINUTES = 5
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+
+const ALLOWED_FILE_TYPES = [
+	'image/svg+xml',
+	'image/png',
+	'image/jpeg',
+	'image/gif',
+	'application/pdf'
+]
+
+const ALLOWED_FILE_EXTENSION = /\.(svg|png|jpe?g|gif|pdf)$/i
+
+const MAX_IMAGE_WIDTH = 800
+const MAX_IMAGE_HEIGHT = 400
+
 const regionPaymentSchema = z.object({
 	regionId: z.string().min(1, 'Выберите регион'),
 	amount: z
@@ -54,13 +80,10 @@ const createRequestSchema = z
 		regions: z
 			.array(regionPaymentSchema)
 			.min(1, 'Добавьте хотя бы один регион'),
-
 		wallet: z.string().trim().min(1, 'Введите адрес кошелька'),
-
 		paymentGoalId: z.string().min(1, 'Выберите цель оплаты'),
-
 		lifetimeId: z.string().min(1, 'Выберите срок жизни заявки'),
-
+		customLifetimeMinutes: z.string().trim().optional(),
 		attachment: z.custom<File | null>().nullable()
 	})
 	.superRefine((values, context) => {
@@ -68,30 +91,32 @@ const createRequestSchema = z
 			.map(region => region.regionId)
 			.filter(Boolean)
 
-		const uniqueRegionIds = new Set(selectedRegionIds)
-
-		if (uniqueRegionIds.size !== selectedRegionIds.length) {
+		if (new Set(selectedRegionIds).size !== selectedRegionIds.length) {
 			context.addIssue({
 				code: z.ZodIssueCode.custom,
 				path: ['regions'],
 				message: 'Нельзя выбрать один регион несколько раз'
 			})
 		}
+
+		if (values.lifetimeId === CUSTOM_LIFETIME_ID) {
+			const minutes = Number(values.customLifetimeMinutes)
+
+			if (
+				!Number.isInteger(minutes) ||
+				minutes < 1 ||
+				minutes > MAX_CUSTOM_LIFETIME_MINUTES
+			) {
+				context.addIssue({
+					code: z.ZodIssueCode.custom,
+					path: ['customLifetimeMinutes'],
+					message: `Введите целое число от 1 до ${MAX_CUSTOM_LIFETIME_MINUTES}`
+				})
+			}
+		}
 	})
 
 type CreateRequestFormValues = z.infer<typeof createRequestSchema>
-
-const ALLOWED_IMAGE_TYPES = [
-	'image/svg+xml',
-	'image/png',
-	'image/jpeg',
-	'image/gif'
-]
-
-const ALLOWED_IMAGE_EXTENSION = /\.(svg|png|jpe?g|gif)$/i
-
-const MAX_IMAGE_WIDTH = 800
-const MAX_IMAGE_HEIGHT = 400
 
 function getDefaultValues(): CreateRequestFormValues {
 	return {
@@ -104,15 +129,60 @@ function getDefaultValues(): CreateRequestFormValues {
 		wallet: '',
 		paymentGoalId: '',
 		lifetimeId: '',
+		customLifetimeMinutes: '',
 		attachment: null
 	}
 }
 
-function formatAmount(value: number) {
-	return new Intl.NumberFormat('ru-RU', {
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 5
-	}).format(value)
+function formatTotalAmount(value: number) {
+	return value.toFixed(5)
+}
+
+function formatRegionAmount(value: number) {
+	return value.toFixed(2)
+}
+
+function formatLimit(value: number) {
+	return String(value)
+}
+
+type LimitStatus = 'safe' | 'warning' | 'exceeded'
+
+type LifetimeStatus = 'idle' | 'active' | 'warning' | 'expired' | 'unlimited'
+
+function getLimitStatus(amountValue: string, limit: number): LimitStatus {
+	const amount = Number(amountValue)
+
+	if (!Number.isFinite(amount) || amount <= 0) {
+		return 'safe'
+	}
+
+	if (amount > limit) {
+		return 'exceeded'
+	}
+
+	if (amount >= limit * 0.8) {
+		return 'warning'
+	}
+
+	return 'safe'
+}
+
+function getLifetimeLabel(
+	lifetime: CreateRequestLifetime | undefined,
+	customMinutes?: string
+) {
+	if (!lifetime) {
+		return '—'
+	}
+
+	if (lifetime.type === 'custom') {
+		const minutes = Number(customMinutes)
+
+		return Number.isInteger(minutes) && minutes > 0 ? `${minutes} минут` : '—'
+	}
+
+	return lifetime.label
 }
 
 function formatDateTime(date: Date) {
@@ -211,6 +281,11 @@ export function CreateRequestPageContent({
 		name: 'attachment'
 	})
 
+	const customLifetimeMinutes = useWatch({
+		control,
+		name: 'customLifetimeMinutes'
+	})
+
 	const totalAmount = useMemo(() => {
 		return selectedRegions.reduce((total, item) => {
 			const amount = Number(item.amount)
@@ -223,17 +298,109 @@ export function CreateRequestPageContent({
 		lifetime => lifetime.id === selectedLifetimeId
 	)
 
-	const expiresAt = useMemo(() => {
+	const resolvedLifetimeMinutes = useMemo(() => {
 		if (!selectedLifetime) {
 			return null
 		}
 
-		const date = new Date()
+		if (selectedLifetime.type === 'unlimited') {
+			return null
+		}
 
-		date.setMinutes(date.getMinutes() + selectedLifetime.minutes)
+		if (selectedLifetime.type === 'fixed') {
+			return selectedLifetime.minutes
+		}
 
-		return date
-	}, [selectedLifetime])
+		const minutes = Number(customLifetimeMinutes)
+
+		if (!Number.isInteger(minutes) || minutes <= 0) {
+			return null
+		}
+
+		return minutes
+	}, [customLifetimeMinutes, selectedLifetime])
+
+	const [lifetimeStartedAt, setLifetimeStartedAt] = useState<number | null>(
+		null
+	)
+	const [now, setNow] = useState(() => Date.now())
+
+	useEffect(() => {
+		if (
+			!selectedLifetime ||
+			selectedLifetime.type === 'unlimited' ||
+			!resolvedLifetimeMinutes
+		) {
+			// eslint-disable-next-line react-hooks/set-state-in-effect
+			setLifetimeStartedAt(null)
+			return
+		}
+
+		setLifetimeStartedAt(Date.now())
+		setNow(Date.now())
+	}, [selectedLifetimeId, resolvedLifetimeMinutes, selectedLifetime])
+
+	const expiresAtTimestamp = useMemo(() => {
+		if (!lifetimeStartedAt || !resolvedLifetimeMinutes) {
+			return null
+		}
+
+		return lifetimeStartedAt + resolvedLifetimeMinutes * 60_000
+	}, [lifetimeStartedAt, resolvedLifetimeMinutes])
+
+	useEffect(() => {
+		if (!expiresAtTimestamp) {
+			return
+		}
+
+		const intervalId = window.setInterval(() => {
+			setNow(Date.now())
+		}, 1000)
+
+		return () => {
+			window.clearInterval(intervalId)
+		}
+	}, [expiresAtTimestamp])
+
+	const remainingMilliseconds =
+		expiresAtTimestamp === null ? null : Math.max(expiresAtTimestamp - now, 0)
+
+	const remainingMinutes =
+		remainingMilliseconds === null
+			? null
+			: Math.ceil(remainingMilliseconds / 60_000)
+
+	const lifetimeStatus: LifetimeStatus = useMemo(() => {
+		if (!selectedLifetime) {
+			return 'idle'
+		}
+
+		if (selectedLifetime.type === 'unlimited') {
+			return 'unlimited'
+		}
+
+		if (remainingMilliseconds === null) {
+			return 'idle'
+		}
+
+		if (remainingMilliseconds <= 0) {
+			return 'expired'
+		}
+
+		if (remainingMilliseconds <= EXPIRING_SOON_THRESHOLD_MINUTES * 60_000) {
+			return 'warning'
+		}
+
+		return 'active'
+	}, [remainingMilliseconds, selectedLifetime])
+
+	const expiresAt = useMemo(() => {
+		if (!expiresAtTimestamp) {
+			return null
+		}
+
+		return new Date(expiresAtTimestamp)
+	}, [expiresAtTimestamp])
 
 	function getRegion(regionId: string) {
 		return regions.find(region => region.id === regionId)
@@ -269,45 +436,11 @@ export function CreateRequestPageContent({
 		}
 	}
 
-	async function handleImageFile(file: File) {
-		setFileError(null)
-
-		const hasAllowedType =
-			ALLOWED_IMAGE_TYPES.includes(file.type) ||
-			ALLOWED_IMAGE_EXTENSION.test(file.name)
-
-		if (!hasAllowedType) {
-			setFileError('Поддерживаются только SVG, PNG, JPG и GIF')
-			return
-		}
-
-		try {
-			const dimensions = await readImageDimensions(file)
-
-			if (
-				dimensions.width > MAX_IMAGE_WIDTH ||
-				dimensions.height > MAX_IMAGE_HEIGHT
-			) {
-				setFileError(
-					`Максимальный размер изображения — ${MAX_IMAGE_WIDTH}×${MAX_IMAGE_HEIGHT}px`
-				)
-				return
-			}
-
-			setValue('attachment', file, {
-				shouldDirty: true,
-				shouldValidate: true
-			})
-		} catch {
-			setFileError('Не удалось прочитать выбранное изображение')
-		}
-	}
-
 	function handleFileInputChange(event: React.ChangeEvent<HTMLInputElement>) {
 		const file = event.target.files?.[0]
 
 		if (file) {
-			void handleImageFile(file)
+			void handleAttachmentFile(file)
 		}
 
 		event.target.value = ''
@@ -319,8 +452,54 @@ export function CreateRequestPageContent({
 		const file = event.dataTransfer.files?.[0]
 
 		if (file) {
-			void handleImageFile(file)
+			void handleAttachmentFile(file)
 		}
+	}
+
+	async function handleAttachmentFile(file: File) {
+		setFileError(null)
+
+		const hasAllowedType =
+			ALLOWED_FILE_TYPES.includes(file.type) ||
+			ALLOWED_FILE_EXTENSION.test(file.name)
+
+		if (!hasAllowedType) {
+			setFileError('Поддерживаются SVG, PNG, JPG, GIF и PDF')
+			return
+		}
+
+		if (file.size > MAX_FILE_SIZE) {
+			setFileError('Максимальный размер файла — 10 МБ')
+			return
+		}
+
+		const isImage =
+			file.type.startsWith('image/') ||
+			/\.(svg|png|jpe?g|gif)$/i.test(file.name)
+
+		if (isImage) {
+			try {
+				const dimensions = await readImageDimensions(file)
+
+				if (
+					dimensions.width > MAX_IMAGE_WIDTH ||
+					dimensions.height > MAX_IMAGE_HEIGHT
+				) {
+					setFileError(
+						`Максимальный размер изображения — ${MAX_IMAGE_WIDTH}×${MAX_IMAGE_HEIGHT}px`
+					)
+					return
+				}
+			} catch {
+				setFileError('Не удалось прочитать выбранное изображение')
+				return
+			}
+		}
+
+		setValue('attachment', file, {
+			shouldDirty: true,
+			shouldValidate: true
+		})
 	}
 
 	function handleRemoveAttachment() {
@@ -336,12 +515,16 @@ export function CreateRequestPageContent({
 	}
 
 	function handleOpenConfirmation(values: CreateRequestFormValues) {
+		if (lifetimeStatus === 'expired') {
+			return
+		}
+
 		setPendingRequest(values)
 		setIsConfirmDialogOpen(true)
 	}
 
 	function handleConfirmCreateRequest() {
-		if (!pendingRequest) {
+		if (!pendingRequest || lifetimeStatus === 'expired') {
 			return
 		}
 
@@ -372,124 +555,127 @@ export function CreateRequestPageContent({
 		<>
 			<form
 				onSubmit={handleSubmit(handleOpenConfirmation)}
-				className='grid min-h-0 flex-1 gap-5 xl:grid-cols-2'
+				className='grid min-h-0 flex-1 items-start gap-5 xl:grid-cols-2'
 			>
-				<div className='bg-card min-h-[620px] rounded-3xl border p-8'>
-					<div className='flex flex-col gap-8'>
+				<div className='bg-card min-h-164 rounded-2xl border p-10'>
+					<div className='flex flex-col gap-10'>
 						{fields.map((field, index) => {
 							const selectedRegionId = selectedRegions[index]?.regionId ?? ''
-
 							const selectedRegion = getRegion(selectedRegionId)
 
-							const amount = Number(selectedRegions[index]?.amount)
-
-							const exceedsLimit =
-								selectedRegion &&
-								Number.isFinite(amount) &&
-								amount > selectedRegion.limit
+							const limitStatus = selectedRegion
+								? getLimitStatus(
+										selectedRegions[index]?.amount ?? '',
+										selectedRegion.limit
+									)
+								: null
 
 							return (
 								<div
 									key={field.id}
 									className={cn(
-										'flex flex-col gap-5',
-										index < fields.length - 1 && 'border-b border-dashed pb-8'
+										'flex flex-col gap-10',
+										index < fields.length - 1 && 'border-b border-dashed pb-10'
 									)}
 								>
-									<div className='flex items-center gap-3'>
-										<Controller
-											control={control}
-											name={`regions.${index}.regionId`}
-											render={({ field }) => (
-												<Select
-													value={field.value}
-													onValueChange={field.onChange}
+									<div className='space-y-2'>
+										<div className='flex items-center gap-3'>
+											<Controller
+												control={control}
+												name={`regions.${index}.regionId`}
+												render={({ field }) => (
+													<Select
+														value={field.value}
+														onValueChange={field.onChange}
+													>
+														<SelectTrigger className='w-full'>
+															<SelectValue placeholder='Регион' />
+														</SelectTrigger>
+
+														<SelectContent
+															position='popper'
+															align='start'
+															sideOffset={8}
+														>
+															{regions.map(region => (
+																<SelectItem
+																	key={region.id}
+																	value={region.id}
+																	disabled={isRegionAlreadySelected(
+																		region.id,
+																		index
+																	)}
+																	className='focus:border-border text-muted-foreground data-[state=checked]:border-border h-12 rounded-lg border border-transparent px-3 text-sm font-bold focus:bg-white data-[state=checked]:bg-white'
+																>
+																	{region.label}
+																</SelectItem>
+															))}
+														</SelectContent>
+													</Select>
+												)}
+											/>
+
+											{fields.length > 1 && (
+												<Button
+													type='button'
+													variant='destructive'
+													size='icon-lg'
+													className='bg-transparent'
+													onClick={() => handleRemoveRegion(index)}
 												>
-													<SelectTrigger className='h-14 flex-1 rounded-lg px-4 text-base'>
-														<SelectValue placeholder='Регион' />
-													</SelectTrigger>
-
-													<SelectContent>
-														{regions.map(region => (
-															<SelectItem
-																key={region.id}
-																value={region.id}
-																disabled={isRegionAlreadySelected(
-																	region.id,
-																	index
-																)}
-															>
-																{region.label}
-															</SelectItem>
-														))}
-													</SelectContent>
-												</Select>
+													<Trash2 className='size-5' />
+												</Button>
 											)}
-										/>
+										</div>
 
-										{fields.length > 1 && (
-											<Button
-												type='button'
-												variant='ghost'
-												size='icon'
-												onClick={() => handleRemoveRegion(index)}
-												className='text-destructive hover:text-destructive size-10 shrink-0'
-											>
-												<Trash2 className='size-5' />
-											</Button>
+										{errors.regions?.[index]?.regionId && (
+											<p className='text-destructive'>
+												{errors.regions[index]?.regionId?.message}
+											</p>
 										)}
 									</div>
 
-									{errors.regions?.[index]?.regionId && (
-										<p className='text-destructive text-sm'>
-											{errors.regions[index]?.regionId?.message}
-										</p>
-									)}
+									<div className='space-y-5'>
+										<div className='space-y-2'>
+											<div className='relative'>
+												<span className='text-primary pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-lg font-semibold'>
+													USDT
+												</span>
 
-									<div className='relative'>
-										<span className='text-primary pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-base'>
-											USDT
-										</span>
+												<Input
+													type='number'
+													inputMode='decimal'
+													step='any'
+													placeholder='0.00000'
+													className='pl-18.5'
+													{...register(`regions.${index}.amount`)}
+												/>
+											</div>
 
-										<Input
-											type='number'
-											inputMode='decimal'
-											step='any'
-											placeholder='0.00000'
-											className='h-14 rounded-lg pr-4 pl-17 text-base'
-											{...register(`regions.${index}.amount`)}
-										/>
-									</div>
-
-									{errors.regions?.[index]?.amount && (
-										<p className='text-destructive text-sm'>
-											{errors.regions[index]?.amount?.message}
-										</p>
-									)}
-
-									<p className='text-base'>
-										Лимит:{' '}
-										<span className='text-chart-2'>
-											{selectedRegion
-												? `${formatAmount(selectedRegion.limit)} USDT`
-												: '—'}
-										</span>
-									</p>
-
-									{exceedsLimit && (
-										<div className='bg-chart-2/15 text-chart-2 flex items-center gap-2 rounded-md px-3 py-2 text-xs font-medium'>
-											<Info className='size-4 shrink-0' />
-											Оплата может превысить лимит
+											{errors.regions?.[index]?.amount && (
+												<p className='text-destructive'>
+													{errors.regions[index]?.amount?.message}
+												</p>
+											)}
 										</div>
-									)}
+
+										<p className='text-lg'>
+											Лимит:{' '}
+											<span className='text-chart-2'>
+												{selectedRegion
+													? `${formatLimit(selectedRegion.limit)} USDT`
+													: '—'}
+											</span>
+										</p>
+
+										{limitStatus && <LimitState status={limitStatus} />}
+									</div>
 								</div>
 							)
 						})}
 
 						{typeof errors.regions?.message === 'string' && (
-							<p className='text-destructive text-sm'>
-								{errors.regions.message}
-							</p>
+							<p className='text-destructive'>{errors.regions.message}</p>
 						)}
 
 						<Button
@@ -497,28 +683,25 @@ export function CreateRequestPageContent({
 							variant='outline'
 							onClick={handleAddRegion}
 							disabled={fields.length >= regions.length}
-							className='border-primary text-primary w-fit rounded-xl'
+							className='w-fit'
 						>
 							+ Добавить регион
 						</Button>
 					</div>
 				</div>
 
-				<div className='bg-card flex flex-col rounded-3xl border p-8'>
-					<div className='bg-primary/15 text-primary flex min-h-14 items-center gap-3 rounded-lg px-4 font-semibold'>
+				<div className='bg-card flex flex-col rounded-2xl border p-10'>
+					<div className='bg-primary/20 text-primary flex items-center gap-3 rounded-lg p-3 text-base font-bold'>
 						<span>Общая сумма по всем регионам</span>
-
-						<span className='text-2xl font-bold'>
-							{formatAmount(totalAmount)}
-						</span>
+						<span className='text-2xl'>{formatTotalAmount(totalAmount)}</span>
 					</div>
 
-					<div className='mt-10 flex flex-col gap-8'>
-						<div>
+					<div className='mt-10 flex flex-col gap-10'>
+						<div className='space-y-2'>
 							<div className='flex'>
 								<Input
 									placeholder='Кошелек'
-									className='h-14 rounded-l-lg rounded-r-none px-4 text-base'
+									className='rounded-r-none'
 									{...register('wallet')}
 								/>
 
@@ -526,16 +709,14 @@ export function CreateRequestPageContent({
 									type='button'
 									variant='outline'
 									onClick={handlePasteWallet}
-									className='h-14 rounded-l-none rounded-r-lg border-l-0 px-5'
+									className='text-foreground border-border h-14 rounded-l-none border-l-0 px-4'
 								>
 									Вставить
 								</Button>
 							</div>
 
 							{errors.wallet && (
-								<p className='text-destructive mt-2 text-sm'>
-									{errors.wallet.message}
-								</p>
+								<p className='text-destructive'>{errors.wallet.message}</p>
 							)}
 						</div>
 
@@ -548,15 +729,20 @@ export function CreateRequestPageContent({
 										value={field.value}
 										onValueChange={field.onChange}
 									>
-										<SelectTrigger className='h-14 rounded-lg px-4 text-base'>
+										<SelectTrigger className='w-full'>
 											<SelectValue placeholder='Цель оплаты' />
 										</SelectTrigger>
 
-										<SelectContent>
+										<SelectContent
+											position='popper'
+											align='start'
+											sideOffset={8}
+										>
 											{paymentGoals.map(goal => (
 												<SelectItem
 													key={goal.id}
 													value={goal.id}
+													className='focus:border-border text-muted-foreground data-[state=checked]:border-border h-12 rounded-lg border border-transparent px-3 text-sm font-bold focus:bg-white data-[state=checked]:bg-white'
 												>
 													{goal.label}
 												</SelectItem>
@@ -567,7 +753,7 @@ export function CreateRequestPageContent({
 							/>
 
 							{errors.paymentGoalId && (
-								<p className='text-destructive mt-2 text-sm'>
+								<p className='text-destructive mt-2'>
 									{errors.paymentGoalId.message}
 								</p>
 							)}
@@ -580,17 +766,31 @@ export function CreateRequestPageContent({
 								render={({ field }) => (
 									<Select
 										value={field.value}
-										onValueChange={field.onChange}
+										onValueChange={value => {
+											field.onChange(value)
+
+											if (value !== CUSTOM_LIFETIME_ID) {
+												setValue('customLifetimeMinutes', '', {
+													shouldDirty: true,
+													shouldValidate: true
+												})
+											}
+										}}
 									>
-										<SelectTrigger className='h-14 rounded-lg px-4 text-base'>
+										<SelectTrigger className='w-full'>
 											<SelectValue placeholder='Срок жизни заявки' />
 										</SelectTrigger>
 
-										<SelectContent>
+										<SelectContent
+											position='popper'
+											align='start'
+											sideOffset={8}
+										>
 											{lifetimes.map(lifetime => (
 												<SelectItem
 													key={lifetime.id}
 													value={lifetime.id}
+													className='focus:border-border text-muted-foreground data-[state=checked]:border-border h-12 rounded-lg border border-transparent px-3 text-sm font-bold focus:bg-white data-[state=checked]:bg-white'
 												>
 													{lifetime.label}
 												</SelectItem>
@@ -601,11 +801,31 @@ export function CreateRequestPageContent({
 							/>
 
 							{errors.lifetimeId && (
-								<p className='text-destructive mt-2 text-sm'>
+								<p className='text-destructive mt-2'>
 									{errors.lifetimeId.message}
 								</p>
 							)}
 						</div>
+
+						{selectedLifetime?.type === 'custom' && (
+							<div className='space-y-2'>
+								<Input
+									type='number'
+									inputMode='numeric'
+									min={1}
+									max={MAX_CUSTOM_LIFETIME_MINUTES}
+									step={1}
+									placeholder='Введите срок жизни в минутах'
+									{...register('customLifetimeMinutes')}
+								/>
+
+								{errors.customLifetimeMinutes && (
+									<p className='text-destructive'>
+										{errors.customLifetimeMinutes.message}
+									</p>
+								)}
+							</div>
+						)}
 
 						<ImageUpload
 							file={attachment}
@@ -616,37 +836,28 @@ export function CreateRequestPageContent({
 							onRemove={handleRemoveAttachment}
 						/>
 
-						<div className='bg-chart-2/15 text-chart-2 flex items-center gap-2 rounded-md px-3 py-2 text-xs font-medium'>
-							<Info className='size-4 shrink-0' />
-							После окончания указанного времени неоплаченная заявка будет
-							автоматически отменена.
-						</div>
-
-						<p className='text-base'>
-							{selectedLifetime && expiresAt ? (
-								<>
-									Заявка будет активна {selectedLifetime.label.toLowerCase()},
-									до {formatDateTime(expiresAt)}.
-								</>
-							) : (
-								'Выберите срок жизни заявки.'
-							)}
-						</p>
+						<LifetimeState
+							status={lifetimeStatus}
+							lifetime={selectedLifetime}
+							expiresAt={expiresAt}
+							remainingMinutes={remainingMinutes}
+						/>
 					</div>
 
 					<div className='mt-auto grid grid-cols-2 gap-4 pt-8'>
 						<Button
 							type='button'
 							variant='outline'
+							size='lg'
 							onClick={handleResetForm}
-							className='border-primary text-primary h-14 text-lg font-semibold'
 						>
 							Отменить заявку
 						</Button>
 
 						<Button
 							type='submit'
-							className='h-14 text-lg font-semibold'
+							disabled={lifetimeStatus === 'expired'}
+							size='lg'
 						>
 							Создать заявку
 						</Button>
@@ -663,6 +874,7 @@ export function CreateRequestPageContent({
 				lifetimes={lifetimes}
 				totalAmount={totalAmount}
 				expiresAt={expiresAt}
+				isExpired={lifetimeStatus === 'expired'}
 				onConfirm={handleConfirmCreateRequest}
 			/>
 
@@ -675,6 +887,99 @@ export function CreateRequestPageContent({
 				onCreateNew={handleCreateNewRequest}
 			/>
 		</>
+	)
+}
+
+type LifetimeStateProps = {
+	status: LifetimeStatus
+	lifetime?: CreateRequestLifetime
+	expiresAt: Date | null
+	remainingMinutes: number | null
+}
+
+function LifetimeState({
+	status,
+	lifetime,
+	expiresAt,
+	remainingMinutes
+}: LifetimeStateProps) {
+	if (status === 'expired') {
+		return (
+			<div className='bg-destructive/20 text-destructive flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs leading-none font-bold'>
+				<Info className='size-4 shrink-0' />
+				Заявка уже перестала быть актуальной
+			</div>
+		)
+	}
+
+	return (
+		<div className='space-y-5 text-lg leading-none font-semibold'>
+			<div className='text-chart-2 flex items-center gap-2.5 rounded-lg bg-[#79FF4833] px-3 py-2 text-xs leading-none font-bold'>
+				<Info className='size-4 shrink-0' />
+				После окончания указанного времени неоплаченная заявка будет
+				автоматически отменена.
+			</div>
+
+			{status === 'active' && lifetime && expiresAt && (
+				<p>
+					Заявка будет активна {lifetime.label.toLowerCase()}, до{' '}
+					{formatDateTime(expiresAt)}.
+				</p>
+			)}
+
+			{status === 'warning' && (
+				<p className='text-chart-3'>
+					До окончания срока жизни заявки осталось меньше{' '}
+					{EXPIRING_SOON_THRESHOLD_MINUTES} минут
+					{remainingMinutes !== null && ` — примерно ${remainingMinutes} мин.`}
+				</p>
+			)}
+
+			{status === 'unlimited' && (
+				<p className=''>Заявка будет активна бессрочно.</p>
+			)}
+
+			{status === 'idle' && (
+				<p className='text-muted-foreground'>Выберите срок жизни заявки.</p>
+			)}
+		</div>
+	)
+}
+
+function LimitState({ status }: { status: LimitStatus }) {
+	const config = {
+		safe: {
+			text: 'Оплата может превысить лимит',
+			className: 'bg-[#79FF4833] text-chart-2'
+		},
+		warning: {
+			text: 'Оплата может превысить лимит',
+			className: 'bg-chart-3/20 text-chart-3'
+		},
+		exceeded: {
+			text: 'Превышен лимит',
+			className: 'bg-destructive/20 text-destructive'
+		}
+	} satisfies Record<
+		LimitStatus,
+		{
+			text: string
+			className: string
+		}
+	>
+
+	const current = config[status]
+
+	return (
+		<div
+			className={cn(
+				'flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs leading-none font-bold',
+				current.className
+			)}
+		>
+			<Info className='size-4 shrink-0' />
+			{current.text}
+		</div>
 	)
 }
 
@@ -696,54 +1001,56 @@ function ImageUpload({
 	onRemove
 }: ImageUploadProps) {
 	return (
-		<div className='flex flex-col gap-3'>
+		<div className='flex flex-col gap-5'>
 			<input
 				ref={fileInputRef}
 				type='file'
-				accept='image/svg+xml,image/png,image/jpeg,image/gif,.svg,.png,.jpg,.jpeg,.gif'
+				accept='image/svg+xml,image/png,image/jpeg,image/gif,application/pdf,.svg,.png,.jpg,.jpeg,.gif,.pdf'
 				onChange={onInputChange}
 				className='hidden'
 			/>
 
-			<div
-				role='button'
-				tabIndex={0}
-				onClick={() => fileInputRef.current?.click()}
-				onKeyDown={event => {
-					if (event.key === 'Enter' || event.key === ' ') {
-						fileInputRef.current?.click()
-					}
-				}}
-				onDragOver={event => event.preventDefault()}
-				onDrop={onDrop}
-				className='hover:bg-muted/30 flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border p-5 text-center transition-colors'
-			>
-				<div className='mb-3 flex size-10 items-center justify-center rounded-lg border'>
-					<UploadCloud className='size-5' />
+			<div className='space-y-2'>
+				<div
+					role='button'
+					tabIndex={0}
+					onClick={() => fileInputRef.current?.click()}
+					onKeyDown={event => {
+						if (event.key === 'Enter' || event.key === ' ') {
+							fileInputRef.current?.click()
+						}
+					}}
+					onDragOver={event => event.preventDefault()}
+					onDrop={onDrop}
+					className='hover:bg-muted/30 text-muted-foreground flex min-h-32 cursor-pointer flex-col items-center justify-center rounded-xl border px-6 py-4 text-center font-bold transition-colors'
+				>
+					<div className='mb-3 flex size-10 items-center justify-center rounded-md border'>
+						<UploadCloud className='size-5' />
+					</div>
+
+					<p>
+						<span className='text-primary'>Click to upload</span> or drag and
+						drop
+					</p>
+					<p className='mt-1'>SVG, PNG, JPG or GIF (max. 800x400px)</p>
 				</div>
 
-				<p className='text-muted-foreground text-sm'>
-					<span className='text-primary font-semibold'>Click to upload</span> or
-					drag and drop
-				</p>
-
-				<p className='text-muted-foreground mt-1 text-sm'>
-					SVG, PNG, JPG or GIF (max. 800×400px)
-				</p>
+				{error && <p className='text-destructive'>{error}</p>}
 			</div>
 
 			{file && (
-				<div className='flex items-center gap-3 rounded-xl border px-4 py-3'>
-					<div className='bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg'>
-						<FileImage className='size-5' />
+				<div className='flex items-center gap-3 rounded-xl border p-4'>
+					<div className='bg-primary/20 text-primary flex size-10 shrink-0 items-center justify-center rounded-md'>
+						{file.type === 'application/pdf' ? (
+							<FileText className='size-5' />
+						) : (
+							<FileImage className='size-5' />
+						)}
 					</div>
 
-					<div className='min-w-0 flex-1'>
-						<p className='truncate text-sm font-semibold'>{file.name}</p>
-
-						<p className='text-muted-foreground text-xs'>
-							{formatFileSize(file.size)} — 100% uploaded
-						</p>
+					<div className='min-w-0 flex-1 space-y-1'>
+						<p className='truncate font-medium'>{file.name}</p>
+						<p>{formatFileSize(file.size)} — 100% uploaded</p>
 					</div>
 
 					<div className='bg-primary flex size-5 shrink-0 items-center justify-center rounded'>
@@ -752,20 +1059,18 @@ function ImageUpload({
 
 					<Button
 						type='button'
-						variant='ghost'
-						size='icon'
+						variant='destructive'
+						size='icon-lg'
 						onClick={event => {
 							event.stopPropagation()
 							onRemove()
 						}}
-						className='text-destructive size-8'
+						className='bg-transparent'
 					>
-						<Trash2 className='size-4' />
+						<Trash2 className='size-5' />
 					</Button>
 				</div>
 			)}
-
-			{error && <p className='text-destructive text-sm'>{error}</p>}
 		</div>
 	)
 }
@@ -779,6 +1084,7 @@ type RequestConfirmationDialogProps = {
 	lifetimes: CreateRequestLifetime[]
 	totalAmount: number
 	expiresAt: Date | null
+	isExpired: boolean
 	onConfirm: () => void
 }
 
@@ -791,7 +1097,8 @@ function RequestConfirmationDialog({
 	lifetimes,
 	totalAmount,
 	expiresAt,
-	onConfirm
+	onConfirm,
+	isExpired
 }: RequestConfirmationDialogProps) {
 	if (!request) {
 		return null
@@ -808,18 +1115,17 @@ function RequestConfirmationDialog({
 			open={open}
 			onOpenChange={onOpenChange}
 		>
-			<DialogContent className='max-h-[90vh] w-[calc(100%-32px)] max-w-[1250px] overflow-hidden rounded-3xl border-0 p-8 shadow-2xl sm:max-w-[1250px]'>
+			<DialogContent className='max-h-[90vh] w-[calc(100%-32px)] max-w-312 gap-10 overflow-hidden rounded-3xl border-0 p-10 xl:max-w-364'>
 				<DialogHeader className='sr-only'>
 					<DialogTitle>Подтверждение создания заявки</DialogTitle>
-
 					<DialogDescription>
 						Проверьте данные перед созданием заявки
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className='grid min-h-0 gap-5 xl:grid-cols-2'>
-					<div className='max-h-[620px] overflow-y-auto rounded-3xl border p-8'>
-						<div className='flex flex-col gap-7'>
+					<div className='max-h-170 overflow-y-auto rounded-3xl border p-10'>
+						<div className='flex flex-col gap-10'>
 							{request.regions.map((regionPayment, index) => {
 								const region = regions.find(
 									item => item.id === regionPayment.regionId
@@ -831,21 +1137,20 @@ function RequestConfirmationDialog({
 										className={cn(
 											'flex flex-col gap-5',
 											index < request.regions.length - 1 &&
-												'border-b border-dashed pb-7'
+												'border-b border-dashed pb-10'
 										)}
 									>
 										<PreviewField>{region?.label ?? '—'}</PreviewField>
 
 										<PreviewField>
-											<span className='text-primary mr-2'>USDT</span>
-
-											{formatAmount(Number(regionPayment.amount))}
+											<span className='text-primary mr-2.5'>USDT</span>
+											{formatRegionAmount(Number(regionPayment.amount))}
 										</PreviewField>
 
-										<p>
+										<p className='text-lg font-semibold'>
 											Лимит:{' '}
 											<span className='text-chart-2'>
-												{region ? `${formatAmount(region.limit)} USDT` : '—'}
+												{region ? `${formatLimit(region.limit)} USDT` : '—'}
 											</span>
 										</p>
 									</div>
@@ -854,26 +1159,27 @@ function RequestConfirmationDialog({
 						</div>
 					</div>
 
-					<div className='flex max-h-[620px] flex-col overflow-y-auto rounded-3xl border p-8'>
-						<div className='bg-primary/15 text-primary flex min-h-14 items-center gap-3 rounded-lg px-4 font-semibold'>
+					<div className='flex max-h-170 flex-col overflow-y-auto rounded-3xl border p-10'>
+						<div className='bg-primary/20 text-primary flex items-center gap-3 rounded-lg p-3 text-base font-bold'>
 							<span>Общая сумма по всем регионам</span>
-
-							<span className='text-2xl font-bold'>
-								{formatAmount(totalAmount)}
-							</span>
+							<span className='text-2xl'>{formatTotalAmount(totalAmount)}</span>
 						</div>
 
-						<div className='mt-8 flex flex-col gap-6'>
+						<div className='mt-10 flex flex-col gap-10'>
 							<PreviewField>{request.wallet}</PreviewField>
-
 							<PreviewField>{paymentGoal?.label ?? '—'}</PreviewField>
+							<PreviewField>
+								{getLifetimeLabel(lifetime, request.customLifetimeMinutes)}
+							</PreviewField>
 
-							<PreviewField>{lifetime?.label ?? '—'}</PreviewField>
-
-							<div className='rounded-xl border p-4'>
-								{request.attachment ? (
+							{request.attachment && (
+								<div className='rounded-lg border p-4'>
 									<div className='flex items-center gap-3'>
-										<FileImage className='text-primary size-7' />
+										{request.attachment.type === 'application/pdf' ? (
+											<FileText className='text-primary size-7' />
+										) : (
+											<FileImage className='text-primary size-7' />
+										)}
 
 										<div className='min-w-0'>
 											<p className='truncate font-semibold'>
@@ -885,15 +1191,17 @@ function RequestConfirmationDialog({
 											</p>
 										</div>
 									</div>
-								) : (
-									<p className='text-muted-foreground'>
-										Изображение не загружено
-									</p>
-								)}
-							</div>
+								</div>
+							)}
 
-							{lifetime && expiresAt && (
-								<p>
+							{lifetime?.type === 'unlimited' && (
+								<p className='text-lg leading-none font-semibold'>
+									Заявка будет активна бессрочно.
+								</p>
+							)}
+
+							{lifetime && lifetime.type !== 'unlimited' && expiresAt && (
+								<p className='text-lg leading-none font-semibold'>
 									Заявка будет активна {lifetime.label.toLowerCase()}, до{' '}
 									{formatDateTime(expiresAt)}.
 								</p>
@@ -902,20 +1210,23 @@ function RequestConfirmationDialog({
 					</div>
 				</div>
 
-				<div className='mt-8 ml-auto grid w-full max-w-[580px] grid-cols-2 gap-4'>
+				<div className='ml-auto grid w-full grid-cols-4 gap-5'>
 					<Button
 						type='button'
 						variant='outline'
 						onClick={() => onOpenChange(false)}
-						className='border-primary text-primary h-14 text-lg font-semibold'
+						className='col-start-3'
+						size='lg'
 					>
 						Отменить заявку
 					</Button>
 
 					<Button
 						type='button'
+						disabled={isExpired}
 						onClick={onConfirm}
-						className='h-14 text-lg font-semibold'
+						className='col-start-4'
+						size='lg'
 					>
 						Создать заявку
 					</Button>
@@ -927,7 +1238,7 @@ function RequestConfirmationDialog({
 
 function PreviewField({ children }: { children: React.ReactNode }) {
 	return (
-		<div className='flex min-h-14 items-center rounded-lg border px-4 text-base'>
+		<div className='flex min-h-14 items-center rounded-lg border px-4 text-lg font-semibold'>
 			{children}
 		</div>
 	)
@@ -955,9 +1266,9 @@ function RequestSuccessDialog({
 			open={open}
 			onOpenChange={onOpenChange}
 		>
-			<DialogContent className='w-[calc(100%-32px)] max-w-[630px] rounded-3xl border-0 px-14 py-16 shadow-2xl sm:max-w-[630px]'>
+			<DialogContent className='w-[calc(100%-32px)] max-w-158 gap-0 rounded-3xl border-0 px-15 py-20 sm:max-w-158'>
 				<DialogHeader>
-					<DialogTitle className='text-center text-3xl font-bold'>
+					<DialogTitle className='text-center text-[32px] leading-none font-bold'>
 						Заявка успешно создана
 					</DialogTitle>
 
@@ -966,31 +1277,34 @@ function RequestSuccessDialog({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className='mt-8 flex flex-col items-center gap-8 text-center'>
+				<div className='mt-10 flex flex-col items-center gap-10 text-center text-lg font-semibold'>
 					<p className='text-lg'>
-						Номер заявки:{' '}
-						<span className='text-primary font-semibold'>{requestNumber}</span>
+						Номер заявки: <span className='text-primary'>{requestNumber}</span>
 					</p>
 
-					<span className='bg-chart-3/20 text-chart-3 rounded-xl px-4 py-2 text-sm font-bold'>
+					<span className='bg-chart-3/20 text-chart-3 rounded-xl px-4 py-2 text-base font-bold'>
 						In Progress
 					</span>
 
-					{lifetime && expiresAt && (
-						<p className='text-lg'>
+					{lifetime?.type === 'unlimited' && (
+						<p>Заявка будет активна бессрочно.</p>
+					)}
+
+					{lifetime && lifetime.type !== 'unlimited' && expiresAt && (
+						<p>
 							Заявка будет активна {lifetime.label.toLowerCase()}, до{' '}
 							{formatDateTime(expiresAt)}.
 						</p>
 					)}
-
-					<Button
-						type='button'
-						onClick={onCreateNew}
-						className='mt-4 h-14 w-full text-lg font-semibold'
-					>
-						Создать новую заявку
-					</Button>
 				</div>
+				<Button
+					type='button'
+					onClick={onCreateNew}
+					className='mt-15 w-full'
+					size='lg'
+				>
+					Создать новую заявку
+				</Button>
 			</DialogContent>
 		</Dialog>
 	)
