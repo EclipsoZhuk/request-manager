@@ -21,6 +21,7 @@ export default async function AdminRequestsPage({
 	return (
 		<RequestsPageContent
 			requests={getMockRequests(search)}
+			role='admin'
 			search={search}
 		/>
 	)

@@ -193,7 +193,7 @@ export function PaymentGoalsPageContent({
 				open={isDialogOpen}
 				onOpenChange={handleDialogOpenChange}
 			>
-				<DialogContent className='max-w-157! gap-15 px-15 py-20'>
+				<DialogContent className='max-w-157! gap-15 p-15'>
 					<DialogHeader className='sr-only'>
 						<DialogTitle>
 							{isEditing

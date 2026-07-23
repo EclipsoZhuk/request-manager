@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -24,10 +25,12 @@ import {
 
 import { type RequestListItem, type RequestStatus } from './mock'
 import { RequestFilter } from './request-filter'
+import type { UserRole } from '@/features/auth/schema'
 import { cn } from '@/lib/utils'
 
 type RequestsPageContentProps = {
 	requests: RequestListItem[]
+	role: UserRole
 	search?: string
 }
 
@@ -93,8 +96,11 @@ function RequestStatusBadge({ status, onCancel }: RequestStatusBadgeProps) {
 
 export function RequestsPageContent({
 	requests,
+	role,
 	search = ''
 }: RequestsPageContentProps) {
+	const canManage = role === 'admin'
+
 	const [requestItems, setRequestItems] = useState<RequestListItem[]>(
 		() => requests
 	)
@@ -116,10 +122,7 @@ export function RequestsPageContent({
 		setRequestItems(currentRequests =>
 			currentRequests.map(request =>
 				request.id === requestToCancel.id
-					? {
-							...request,
-							status: 'cancelled'
-						}
+					? { ...request, status: 'cancelled' }
 					: request
 			)
 		)
@@ -182,7 +185,18 @@ export function RequestsPageContent({
 										key={request.id}
 										className='h-14.5'
 									>
-										<TableCell>{request.id}</TableCell>
+										<TableCell>
+											{canManage ? (
+												<Link
+													href={`/admin/requests/${request.id}`}
+													className='text-primary font-bold underline-offset-4 hover:underline'
+												>
+													{request.id}
+												</Link>
+											) : (
+												request.id
+											)}
+										</TableCell>
 										<TableCell>{request.createdAt}</TableCell>
 										<TableCell>{request.creator}</TableCell>
 										<TableCell>{request.regions}</TableCell>
@@ -198,7 +212,7 @@ export function RequestsPageContent({
 											<RequestStatusBadge
 												status={request.status}
 												onCancel={
-													request.status === 'in_progress'
+													canManage && request.status === 'in_progress'
 														? () => setRequestToCancel(request)
 														: undefined
 												}

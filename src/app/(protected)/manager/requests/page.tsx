@@ -24,6 +24,7 @@ export default async function ManagerRequestsPage({
 		<div className='flex h-full min-h-0 flex-col'>
 			<RequestsPageContent
 				requests={requests}
+				role='manager'
 				search={search}
 			/>
 		</div>
